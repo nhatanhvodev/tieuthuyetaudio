@@ -1,0 +1,12 @@
+node_modules
+.next
+out
+coverage
+.env
+.env.local
+.env.*.local
+dist
+*.tsbuildinfo
+.superpowers
+playwright-report
+test-results
