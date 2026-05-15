@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { EpisodeList } from "@/components/series/episode-list";
 import { StoryShelf } from "@/components/series/story-shelf";
+import { ReviewForm } from "@/components/review/review-form";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getHomeShelves, getSeriesBySlug } from "@/lib/series/queries";
@@ -43,6 +44,10 @@ export default async function SeriesDetailPage({ params }: { params: Promise<{ s
       <section className="mx-auto max-w-7xl px-4 py-8">
         <h2 className="mb-4 text-2xl font-black">Danh sach tap</h2>
         <EpisodeList slug={series.slug} episodes={series.episodes} />
+      </section>
+      <section className="mx-auto max-w-7xl px-4 py-8">
+        <h2 className="mb-4 text-2xl font-black">Danh gia</h2>
+        <ReviewForm seriesId={series.id} />
       </section>
       <StoryShelf title="Truyen lien quan" items={related.recommended.filter((item) => item.id !== series.id).slice(0, 6)} />
     </>
