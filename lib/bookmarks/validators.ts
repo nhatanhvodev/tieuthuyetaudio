@@ -19,6 +19,11 @@ export const bookmarkDeleteSchema = z.object({
   bookmarkId: z.string().trim().min(1)
 });
 
+export const bookmarkUpdateSchema = z.object({
+  bookmarkId: z.string().trim().min(1),
+  note: z.string().max(500).optional().transform(normalizeNote)
+});
+
 export type BookmarkTimelineItem = {
   id: string;
   second: number;

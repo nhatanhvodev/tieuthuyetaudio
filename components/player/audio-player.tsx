@@ -5,6 +5,7 @@ import { BookmarkPlus, Pause, Play, RotateCcw, RotateCw, Volume2 } from "lucide-
 import { BookmarkList } from "@/components/player/bookmark-list";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { buildPlayerEventPayload, emitAnalyticsPayload } from "@/lib/analytics/events";
 import type { BookmarkTimelineItem } from "@/lib/bookmarks/validators";
 import { featureFlags } from "@/lib/features";
 import { formatSeconds } from "@/lib/format";
@@ -52,6 +53,7 @@ export function AudioPlayer({
   const [bookmarkStatus, setBookmarkStatus] = useState("");
   const [isLoadingBookmarks, setIsLoadingBookmarks] = useState(false);
   const [isSavingBookmark, setIsSavingBookmark] = useState(false);
+  const [savingBookmarkId, setSavingBookmarkId] = useState<string | null>(null);
   const [deletingBookmarkId, setDeletingBookmarkId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -154,10 +156,64 @@ export function AudioPlayer({
       setBookmarks((currentItems) => sortBookmarks([...currentItems, nextBookmark]));
       setBookmarkNote("");
       setBookmarkStatus(`Da luu moc tai ${formatSeconds(nextBookmark.second)}.`);
+      emitAnalyticsPayload(
+        buildPlayerEventPayload({
+          eventName: "bookmark_create",
+          episodeId: activeEpisode.episodeId,
+          seriesSlug: activeEpisode.seriesSlug,
+          episodeNumber: activeEpisode.episodeNumber,
+          currentSeconds: nextBookmark.second,
+          durationSeconds: progress.durationSeconds,
+          completed: false
+        })
+      );
     } catch {
       setBookmarkStatus("Khong luu duoc moc nghe.");
     } finally {
       setIsSavingBookmark(false);
+    }
+  }
+
+  async function updateBookmark(bookmarkId: string, note: string) {
+    const previousBookmarks = bookmarks;
+    const normalizedNote = note.trim();
+    setSavingBookmarkId(bookmarkId);
+    setBookmarkStatus("");
+    setBookmarks((currentItems) =>
+      currentItems.map((item) =>
+        item.id === bookmarkId
+          ? {
+              ...item,
+              note: normalizedNote.length ? normalizedNote : null
+            }
+          : item
+      )
+    );
+
+    try {
+      const response = await fetch("/api/bookmarks", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ bookmarkId, note })
+      });
+
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) {
+        setBookmarks(previousBookmarks);
+        setBookmarkStatus(payload?.error ?? "Khong cap nhat duoc ghi chu.");
+        return;
+      }
+
+      const updatedBookmark = payload?.bookmark as BookmarkTimelineItem;
+      setBookmarks((currentItems) => sortBookmarks(currentItems.map((item) => (item.id === bookmarkId ? updatedBookmark : item))));
+      setBookmarkStatus("Da cap nhat ghi chu.");
+    } catch {
+      setBookmarks(previousBookmarks);
+      setBookmarkStatus("Khong cap nhat duoc ghi chu.");
+    } finally {
+      setSavingBookmarkId(null);
     }
   }
 
@@ -334,8 +390,10 @@ export function AudioPlayer({
                     bookmarks={bookmarks}
                     currentSeconds={progress.currentSeconds}
                     deletingBookmarkId={deletingBookmarkId}
+                    savingBookmarkId={savingBookmarkId}
                     onDelete={deleteBookmark}
                     onJump={(second) => requestSeek(second)}
+                    onUpdate={updateBookmark}
                   />
                 </>
               ) : (

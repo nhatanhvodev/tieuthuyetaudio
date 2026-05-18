@@ -5,6 +5,10 @@ import { SeriesActions } from "@/components/series/series-actions";
 import { SeriesDetailTabs } from "@/components/series/series-detail-tabs";
 import { StoryShelf } from "@/components/series/story-shelf";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { auth } from "@/lib/auth";
+import { db } from "@/lib/db";
+import { formatDuration } from "@/lib/format";
 import { getHomeShelves, getSeriesBySlug } from "@/lib/series/queries";
 import { formatCount, formatStatus } from "@/lib/format";
 
@@ -12,9 +16,31 @@ export const dynamic = "force-dynamic";
 
 export default async function SeriesDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const series = await getSeriesBySlug(slug);
+  const [series, session] = await Promise.all([getSeriesBySlug(slug), auth()]);
   if (!series) notFound();
   const related = await getHomeShelves();
+  const resumeProgress = session?.user
+    ? await db.listenProgress.findFirst({
+        where: {
+          userId: session.user.id,
+          currentSeconds: { gt: 0 },
+          episode: {
+            seriesId: series.id
+          }
+        },
+        orderBy: { updatedAt: "desc" },
+        select: {
+          currentSeconds: true,
+          episode: {
+            select: {
+              episodeNumber: true,
+              title: true,
+              durationSeconds: true
+            }
+          }
+        }
+      })
+    : null;
 
   return (
     <>
@@ -69,6 +95,20 @@ export default async function SeriesDetailPage({ params }: { params: Promise<{ s
                   <dd className="mt-1 truncate text-xl font-black">{series.producer}</dd>
                 </div>
               </dl>
+
+              {resumeProgress ? (
+                <div className="mt-6 rounded-lg border border-accent/30 bg-card/90 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">Nghe tiep</p>
+                  <p className="mt-2 text-lg font-black">{resumeProgress.episode.title}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Ban da nghe {formatDuration(resumeProgress.currentSeconds)}
+                    {resumeProgress.episode.durationSeconds ? ` / ${formatDuration(resumeProgress.episode.durationSeconds)}` : ""}
+                  </p>
+                  <Button asChild className="mt-4">
+                    <Link href={`/truyen/${series.slug}/tap/${resumeProgress.episode.episodeNumber}`}>Tiep tuc nghe</Link>
+                  </Button>
+                </div>
+              ) : null}
 
               <SeriesActions seriesId={series.id} slug={series.slug} firstEpisodeNumber={series.episodes[0]?.episodeNumber} title={series.title} />
             </div>

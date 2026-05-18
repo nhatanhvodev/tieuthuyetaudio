@@ -23,6 +23,10 @@ export async function POST(request: Request) {
       : payload.completionPercent ?? null;
 
   const shouldMarkCompleted = Boolean(payload.completed || (completionPercent !== null && completionPercent >= 99));
+  const episode = await db.episode.findUnique({
+    where: { id: payload.episodeId },
+    select: { seriesId: true }
+  });
 
   await db.listenProgress.upsert({
     where: {
@@ -43,6 +47,26 @@ export async function POST(request: Request) {
     }
   });
 
+  await db.analyticsEvent.create({
+    data: {
+      userId: session.user.id,
+      seriesId: payload.seriesId ?? episode?.seriesId ?? null,
+      episodeId: payload.episodeId,
+      nextEpisodeId: payload.nextEpisodeId ?? null,
+      eventName: payload.eventName ?? "progress_update",
+      source: payload.source,
+      sessionId: payload.sessionId ?? null,
+      currentSeconds: payload.currentSeconds,
+      durationSeconds: payload.durationSeconds ?? null,
+      completed: shouldMarkCompleted,
+      completionPercent,
+      listeningDeltaSeconds: payload.listeningDeltaSeconds ?? null,
+      nextEpisodeNumber: payload.nextEpisodeNumber ?? null,
+      autoPlayEnabled: payload.autoPlayEnabled ?? null,
+      occurredAt: payload.occurredAt ? new Date(payload.occurredAt) : new Date()
+    }
+  });
+
   return NextResponse.json({
     ok: true,
     metric: {
@@ -51,6 +75,7 @@ export async function POST(request: Request) {
       source: payload.source,
       sessionId: payload.sessionId ?? null,
       episodeId: payload.episodeId,
+      seriesId: payload.seriesId ?? episode?.seriesId ?? null,
       seriesSlug: payload.seriesSlug ?? null,
       episodeNumber: payload.episodeNumber ?? null,
       currentSeconds: payload.currentSeconds,

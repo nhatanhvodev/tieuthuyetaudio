@@ -28,6 +28,7 @@ model User {
   reviews       Review[]
   progresses    ListenProgress[]
   bookmarks     Bookmark[]
+  analytics     AnalyticsEvent[]
   accounts      Account[]
   sessions      Session[]
   createdAt     DateTime         @default(now())
@@ -83,6 +84,7 @@ model Series {
   categories    SeriesCategory[]
   follows       Follow[]
   reviews       Review[]
+  analytics     AnalyticsEvent[]
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
 
@@ -102,6 +104,8 @@ model Episode {
   listenCount     Int              @default(0)
   progresses      ListenProgress[]
   bookmarks       Bookmark[]
+  analytics       AnalyticsEvent[] @relation("AnalyticsEpisode")
+  nextAnalytics   AnalyticsEvent[] @relation("AnalyticsNextEpisode")
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
 
@@ -176,4 +180,34 @@ model Bookmark {
 
   @@index([userId, episodeId, second])
   @@index([episodeId])
+}
+
+model AnalyticsEvent {
+  id                   String    @id @default(cuid())
+  userId               String?
+  seriesId             String?
+  episodeId            String?
+  nextEpisodeId        String?
+  eventName            String
+  source               String
+  sessionId            String?
+  currentSeconds       Int       @default(0)
+  durationSeconds      Int?
+  completed            Boolean?
+  completionPercent    Float?
+  listeningDeltaSeconds Int?
+  nextEpisodeNumber    Int?
+  autoPlayEnabled      Boolean?
+  occurredAt           DateTime
+  createdAt            DateTime  @default(now())
+  user                 User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  series               Series?   @relation(fields: [seriesId], references: [id], onDelete: SetNull)
+  episode              Episode?  @relation("AnalyticsEpisode", fields: [episodeId], references: [id], onDelete: SetNull)
+  nextEpisode          Episode?  @relation("AnalyticsNextEpisode", fields: [nextEpisodeId], references: [id], onDelete: SetNull)
+
+  @@index([eventName, occurredAt])
+  @@index([userId, occurredAt])
+  @@index([seriesId, occurredAt])
+  @@index([episodeId, occurredAt])
+  @@index([sessionId])
 }

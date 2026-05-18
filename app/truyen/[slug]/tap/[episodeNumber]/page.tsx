@@ -108,6 +108,12 @@ export default async function EpisodePage({ params }: { params: Promise<{ slug: 
                 compact
                 title="Nghe khong gian doan voi VIP"
                 description="Mo VIP de nghe lien tuc, uu tien cap nhat nhanh va theo doi truyen dai tap de dang hon."
+                tracking={{
+                  episodeId: episode.id,
+                  seriesId: episode.seriesId,
+                  seriesSlug: episode.series.slug,
+                  episodeNumber: episode.episodeNumber
+                }}
               />
             </div>
           ) : null}

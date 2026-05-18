@@ -90,7 +90,7 @@
 
 - [x] Add query for "most recently active episode per user" with percent completed.
 - [x] Add home shelf `Nghe tiep` above other shelves for signed-in users.
-- [ ] Add resume CTA in account history cards and story detail header.
+- [x] Add resume CTA in account history cards and story detail header.
 - [x] Verify no regressions for anonymous users (shelf hidden safely).
 
 ### Task 6: Bookmarks + notes timeline
@@ -104,7 +104,7 @@
 - [x] Add `Bookmark` model with userId, episodeId, second, note, createdAt.
 - [x] Implement CRUD API with auth guard and Zod validation.
 - [x] Add timeline list under player for jump-to-saved-position.
-- [ ] Add create/edit/delete note flows with optimistic UI.
+- [x] Add create/edit/delete note flows with optimistic UI.
 - [x] Run `npm run db:generate`, `npm run typecheck`, `npm run test`.
 
 ### Task 7: Faceted filtering upgrade
@@ -153,8 +153,8 @@
 - Create: `app/api/analytics/kpi/route.ts`
 - Create: `app/admin/analytics/page.tsx`
 
-- [ ] Emit standardized events: play_start, play_pause, seek, complete_episode, autoplay_next, bookmark_create, upsell_click.
-- [ ] Persist aggregation-ready fields (userId, seriesId, episodeId, timestamp, sessionId).
+- [x] Emit standardized events: play_start, play_pause, seek, complete_episode, autoplay_next, bookmark_create, upsell_click.
+- [x] Persist aggregation-ready fields (userId, seriesId, episodeId, timestamp, sessionId).
 - [x] Expose internal KPI endpoint for D1/D7/D30, completion, conversion proxies.
 - [x] Build admin analytics page with basic charts/tables.
 

@@ -5,7 +5,9 @@ export const playerEventNames = [
   "play_pause",
   "seek",
   "complete_episode",
-  "autoplay_next"
+  "autoplay_next",
+  "bookmark_create",
+  "upsell_click"
 ] as const;
 
 export const playerEventNameSchema = z.enum(playerEventNames);
@@ -18,6 +20,7 @@ export const analyticsPayloadSchema = z.object({
   source: z.string().trim().min(1).default("web_player"),
   sessionId: z.string().trim().min(1).optional(),
   episodeId: z.string().trim().min(1),
+  seriesId: z.string().trim().min(1).optional(),
   seriesSlug: z.string().trim().min(1).optional(),
   episodeNumber: z.number().int().positive().optional(),
   currentSeconds: z.number().int().min(0),

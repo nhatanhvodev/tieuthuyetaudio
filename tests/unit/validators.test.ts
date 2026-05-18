@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { seriesInputSchema } from "@/lib/admin/validators";
-import { bookmarkCreateSchema, bookmarkDeleteSchema, bookmarkQuerySchema } from "@/lib/bookmarks/validators";
+import { bookmarkCreateSchema, bookmarkDeleteSchema, bookmarkQuerySchema, bookmarkUpdateSchema } from "@/lib/bookmarks/validators";
 import { seriesFilterSchema } from "@/lib/series/validators";
 
 describe("series validators", () => {
@@ -33,5 +33,17 @@ describe("bookmark validators", () => {
     expect(bookmarkCreateSchema.safeParse({ episodeId: "episode-1", second: -1 }).success).toBe(false);
     expect(bookmarkDeleteSchema.safeParse({ bookmarkId: "" }).success).toBe(false);
     expect(bookmarkQuerySchema.safeParse({ episodeId: "" }).success).toBe(false);
+  });
+
+  it("normalizes bookmark note updates", () => {
+    expect(bookmarkUpdateSchema.parse({ bookmarkId: "bookmark-1", note: "  can nghe lai  " })).toEqual({
+      bookmarkId: "bookmark-1",
+      note: "can nghe lai"
+    });
+
+    expect(bookmarkUpdateSchema.parse({ bookmarkId: "bookmark-1", note: "   " })).toEqual({
+      bookmarkId: "bookmark-1",
+      note: null
+    });
   });
 });
