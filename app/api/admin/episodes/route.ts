@@ -6,7 +6,7 @@ import { episodeInputSchema } from "@/lib/admin/validators";
 export async function POST(request: Request) {
   await requireAdmin();
   const parsed = episodeInputSchema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: "Tập không hợp lệ" }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Tap khong hop le" }, { status: 400 });
   const data = parsed.data;
   const episode = await db.episode.upsert({
     where: {
@@ -18,14 +18,16 @@ export async function POST(request: Request) {
     update: {
       title: data.title,
       audioUrl: data.audioUrl || null,
-      durationSeconds: data.durationSeconds
+      durationSeconds: data.durationSeconds,
+      isPremium: data.isPremium
     },
     create: {
       seriesId: data.seriesId,
       episodeNumber: data.episodeNumber,
       title: data.title,
       audioUrl: data.audioUrl || null,
-      durationSeconds: data.durationSeconds
+      durationSeconds: data.durationSeconds,
+      isPremium: data.isPremium
     }
   });
 

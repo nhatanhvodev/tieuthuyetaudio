@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { Headphones, Play } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { CoverImage } from "@/components/common/cover-image";
 import { formatCount, formatDuration } from "@/lib/format";
 
 type Episode = {
@@ -10,6 +12,7 @@ type Episode = {
   durationSeconds: number | null;
   listenCount?: number | null;
   audioUrl?: string | null;
+  isPremium?: boolean;
 };
 
 export function EpisodeList({
@@ -35,10 +38,7 @@ export function EpisodeList({
             }`}
           >
             <div className="relative flex size-14 shrink-0 items-end overflow-hidden rounded-md bg-secondary">
-              {coverUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={coverUrl} alt="" loading="lazy" decoding="async" className="absolute inset-0 size-full object-cover" />
-              ) : null}
+              <CoverImage src={coverUrl} alt={episode.title} sizes="56px" className="absolute inset-0 size-full object-cover" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
               <span className="relative p-1.5 text-xs font-black text-white">{episode.episodeNumber}</span>
             </div>
@@ -50,6 +50,7 @@ export function EpisodeList({
                   <Headphones aria-hidden="true" className="size-4" />
                   {formatCount(episode.listenCount ?? 0)}
                 </span>
+                {episode.isPremium ? <Badge variant="accent">VIP</Badge> : null}
                 {isCurrent ? <span className="text-accent">Dang nghe</span> : null}
               </div>
             </div>

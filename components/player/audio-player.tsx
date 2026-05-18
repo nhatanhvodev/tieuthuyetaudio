@@ -63,7 +63,12 @@ export function AudioPlayer({
   }, [episode, queue, loadEpisode]);
 
   const activeEpisode = current ?? episode;
-  const nextEpisode = currentQueueIndex >= 0 ? queueState[currentQueueIndex + 1] ?? null : null;
+  const resolvedQueue = queueState.length ? queueState : queue?.length ? queue : [episode];
+  const resolvedQueueIndex =
+    currentQueueIndex >= 0
+      ? currentQueueIndex
+      : resolvedQueue.findIndex((item) => item.episodeId === activeEpisode.episodeId);
+  const nextEpisode = resolvedQueueIndex >= 0 ? resolvedQueue[resolvedQueueIndex + 1] ?? null : null;
 
   useEffect(() => {
     setBookmarks(sortBookmarks(initialBookmarks));

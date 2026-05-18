@@ -163,7 +163,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     return () => window.clearInterval(interval);
   }, [sleepTimer.mode, sleepTimer.expiresAt, expireSleepTimer]);
 
-  function onEnded() {
+  const handleEnded = useCallback(() => {
     const payload = buildBasePayload(progress.currentSeconds, progress.durationSeconds);
     if (payload) {
       emitAnalyticsPayload(
@@ -197,7 +197,26 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     }
 
     setPlaying(false);
-  }
+  }, [
+    autoPlayNext,
+    buildBasePayload,
+    expireSleepTimer,
+    playNextInQueue,
+    progress.currentSeconds,
+    progress.durationSeconds,
+    setPlaying,
+    sleepTimer.mode
+  ]);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    audio.addEventListener("ended", handleEnded);
+    return () => {
+      audio.removeEventListener("ended", handleEnded);
+    };
+  }, [handleEnded]);
 
   return (
     <>
@@ -208,7 +227,6 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         onError={() => setError("Khong tai duoc audio demo. Vui long thu tap khac.")}
         onLoadedMetadata={(event) => setProgress(event.currentTarget.currentTime, event.currentTarget.duration || 0)}
         onTimeUpdate={(event) => setProgress(event.currentTarget.currentTime, event.currentTarget.duration || 0)}
-        onEnded={onEnded}
       />
       {error ? (
         <div className="fixed bottom-32 left-3 right-3 z-50 rounded-md border bg-card p-3 text-sm text-destructive shadow-lg md:left-auto md:right-4 md:w-[420px]">

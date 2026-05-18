@@ -1,5 +1,12 @@
 import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
+import { isFeatureEnabled } from "@/lib/features";
+import {
+  buildRecommendationSignals,
+  rankSeriesForRecommendation,
+  type RecommendationCandidate,
+  type RecommendationInteraction
+} from "@/lib/series/recommendations";
 import type { SeriesFilters } from "@/lib/series/validators";
 
 export const seriesInclude = {
@@ -200,8 +207,119 @@ export async function getDiscoveryRankings(take = 8) {
   };
 }
 
-export async function getHomeShelves() {
-  const [latest, popular, recommended, latestEpisodes, categories, discovery] = await Promise.all([
+export async function getRecommendedSeriesForUser(userId: string, take = 8): Promise<SeriesWithRelations[]> {
+  const [follows, progresses, candidates] = await Promise.all([
+    db.follow.findMany({
+      where: { userId },
+      select: {
+        seriesId: true,
+        createdAt: true,
+        series: {
+          select: {
+            categories: {
+              select: {
+                category: {
+                  select: {
+                    slug: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }),
+    db.listenProgress.findMany({
+      where: { userId },
+      orderBy: { updatedAt: "desc" },
+      take: 24,
+      select: {
+        currentSeconds: true,
+        completed: true,
+        updatedAt: true,
+        episode: {
+          select: {
+            seriesId: true,
+            durationSeconds: true,
+            series: {
+              select: {
+                categories: {
+                  select: {
+                    category: {
+                      select: {
+                        slug: true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }),
+    db.series.findMany({
+      where: {
+        episodes: {
+          some: {
+            audioUrl: {
+              not: null
+            }
+          }
+        }
+      },
+      include: seriesInclude
+    })
+  ]);
+
+  const interactions: RecommendationInteraction[] = [
+    ...follows.map((follow) => ({
+      type: "follow" as const,
+      seriesId: follow.seriesId,
+      categorySlugs: follow.series.categories.map(({ category }) => category.slug),
+      occurredAt: follow.createdAt
+    })),
+    ...progresses.map((progress) => {
+      const durationSeconds = progress.episode.durationSeconds ?? 0;
+      const completionPercent = durationSeconds > 0 ? Math.min(100, (progress.currentSeconds / durationSeconds) * 100) : 0;
+
+      return {
+        type: "progress" as const,
+        seriesId: progress.episode.seriesId,
+        categorySlugs: progress.episode.series.categories.map(({ category }) => category.slug),
+        occurredAt: progress.updatedAt,
+        completed: progress.completed,
+        completionPercent
+      };
+    })
+  ];
+
+  if (!interactions.length) {
+    return [];
+  }
+
+  const recommendationCandidates: RecommendationCandidate[] = candidates.map((series) => ({
+    id: series.id,
+    slug: series.slug,
+    title: series.title,
+    categorySlugs: series.categories.map(({ category }) => category.slug),
+    createdAt: series.createdAt,
+    averageRating: series.averageRating,
+    listenCount: series.listenCount
+  }));
+
+  const ranked = rankSeriesForRecommendation(recommendationCandidates, buildRecommendationSignals(interactions), take);
+  if (!ranked.length) return [];
+
+  const seriesById = new Map(candidates.map((series) => [series.id, series]));
+  return ranked
+    .map((item) => seriesById.get(item.series.id))
+    .filter((item): item is SeriesWithRelations => Boolean(item));
+}
+
+export async function getHomeShelves(userId?: string) {
+  const recommendationEnabled = isFeatureEnabled("recommendation");
+  const [latest, popular, editorialRecommended, latestEpisodes, categories, discovery, personalizedRecommended] = await Promise.all([
     db.series.findMany({ include: seriesInclude, orderBy: { createdAt: "desc" }, take: 8 }),
     db.series.findMany({ include: seriesInclude, orderBy: { listenCount: "desc" }, take: 8 }),
     db.series.findMany({ include: seriesInclude, orderBy: { averageRating: "desc" }, take: 8 }),
@@ -215,18 +333,27 @@ export async function getHomeShelves() {
       take: 10
     }),
     db.category.findMany({ orderBy: { name: "asc" } }),
-    getDiscoveryRankings(8)
+    getDiscoveryRankings(8),
+    recommendationEnabled && userId ? getRecommendedSeriesForUser(userId, 8) : Promise.resolve([])
   ]);
 
   return {
     latest,
     popular,
-    recommended: discovery.trending7d.length ? discovery.trending7d : recommended,
+    recommended: personalizedRecommended.length
+      ? personalizedRecommended
+      : discovery.trending7d.length
+        ? discovery.trending7d
+        : editorialRecommended,
     latestEpisodes,
     categories,
     trending24h: discovery.trending24h,
     trending7d: discovery.trending7d,
-    rising: discovery.rising
+    rising: discovery.rising,
+    recommendationMeta: {
+      personalized: personalizedRecommended.length > 0,
+      enabled: recommendationEnabled
+    }
   };
 }
 

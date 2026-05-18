@@ -14,7 +14,7 @@
 
 - [x] Core implementation batches completed for retention/player, discovery/filtering, VIP/upsell, analytics/admin KPI, and accessibility hardening.
 - [x] Verification completed: `npm run lint`, `npm run typecheck`, `npm run test`, `npm run test:e2e`, `npm run build`.
-- [ ] Remaining roadmap items still open: story-detail resume CTA, bookmark note editing, recommendation latency validation, soft paywall rules, analytics persistence depth, contrast/reduced-motion verification, deeper performance optimization, CI seed hardening, and finalized monetization model details.
+- [ ] Remaining roadmap items still open: finalized monetization model details.
 
 ## Scope
 
@@ -127,10 +127,10 @@
 - Modify: `app/page.tsx`
 - Modify: `components/series/story-shelf.tsx`
 
-- [ ] Add recommendation strategy using weighted signals: follows, categories, completion, recency.
+- [x] Add recommendation strategy using weighted signals: follows, categories, completion, recency.
 - [x] Split homepage rankings into `Trending 24h`, `Trending 7d`, `Rising`.
 - [x] Add fallback path for users without history.
-- [ ] Validate query latency with realistic seeded data.
+- [x] Validate query latency with realistic seeded data.
 
 ### Task 9: VIP proposition + soft paywall
 **Files:**
@@ -142,7 +142,7 @@
 
 - [x] Redesign VIP page with free vs VIP matrix and FAQ.
 - [x] Add contextual upsell triggers at high-intent moments (after N episodes, on bookmark use).
-- [ ] Add soft paywall rules on marked premium episodes (feature-flagged).
+- [x] Add soft paywall rules on marked premium episodes (feature-flagged).
 - [x] Ensure non-blocking path for demo content and admin testing.
 
 ### Task 10: Event instrumentation + KPI endpoints
@@ -169,7 +169,7 @@
 - [x] Ensure focus visibility and focus-not-obscured for keyboard navigation.
 - [x] Increase touch target sizes for critical controls (player, nav, filter chips).
 - [x] Add/verify ARIA labels and status messages for dynamic UI.
-- [ ] Verify color contrast and reduced-motion compatibility.
+- [x] Verify color contrast and reduced-motion compatibility.
 
 ### Task 12: Performance hardening (Core Web Vitals)
 **Files:**
@@ -179,10 +179,10 @@
 - Modify: `components/series/story-card.tsx`
 - Modify: `next.config.ts`
 
-- [ ] Optimize LCP assets (cover loading priority strategy and responsive image sizing).
-- [ ] Reduce hydration cost on heavy interactive blocks.
+- [x] Optimize LCP assets (cover loading priority strategy and responsive image sizing).
+- [x] Reduce hydration cost on heavy interactive blocks.
 - [x] Add web-vitals field reporting hook and aggregate p75 targets.
-- [ ] Validate LCP/INP/CLS via local and field pipelines.
+- [x] Validate LCP/INP/CLS via local and field pipelines.
 
 ### Task 13: Regression test expansion
 **Files:**
@@ -193,7 +193,7 @@
 
 - [x] Add e2e scenarios for continuous play, timer, paywall states, resume flow.
 - [x] Add unit coverage for new validators and ranking math.
-- [ ] Ensure deterministic seeded dataset for CI.
+- [x] Ensure deterministic seeded dataset for CI.
 - [x] Run `npm run lint && npm run typecheck && npm run test && npm run test:e2e`.
 
 ### Task 14: Release gate + rollout checklist

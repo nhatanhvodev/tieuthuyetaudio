@@ -100,6 +100,7 @@ model Episode {
   episodeNumber   Int
   title           String
   audioUrl        String?
+  isPremium       Boolean          @default(false)
   durationSeconds Int?
   listenCount     Int              @default(0)
   progresses      ListenProgress[]
@@ -111,6 +112,7 @@ model Episode {
 
   @@unique([seriesId, episodeNumber])
   @@index([seriesId])
+  @@index([seriesId, isPremium])
 }
 
 model Category {
@@ -211,3 +213,4 @@ model AnalyticsEvent {
   @@index([episodeId, occurredAt])
   @@index([sessionId])
 }
+

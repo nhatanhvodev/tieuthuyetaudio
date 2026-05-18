@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Play } from "lucide-react";
+import { CoverImage } from "@/components/common/cover-image";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { formatSeconds } from "@/lib/format";
@@ -17,7 +18,7 @@ export function ContinueListeningShelf({
   if (!items.length) return null;
 
   return (
-    <section className="mx-auto max-w-7xl px-4 py-8">
+    <section className="mx-auto max-w-7xl px-4 py-8" style={{ contentVisibility: "auto", containIntrinsicSize: "560px" }}>
       <div className="mb-4 flex items-center justify-between gap-4">
         <h2 className="text-2xl font-black">{title}</h2>
         {href ? <Link href={href} className="text-sm font-semibold text-accent">Xem tat ca</Link> : null}
@@ -30,10 +31,7 @@ export function ContinueListeningShelf({
             <article key={item.progressId} className="rounded-lg border bg-card/90 p-3">
               <div className="flex items-center gap-3">
                 <Link href={episodeHref} className="relative size-14 shrink-0 overflow-hidden rounded-md bg-secondary">
-                  {item.series.coverUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={item.series.coverUrl} alt="" loading="lazy" decoding="async" className="absolute inset-0 size-full object-cover" />
-                  ) : null}
+                  <CoverImage src={item.series.coverUrl} alt={item.series.title} sizes="56px" className="absolute inset-0 size-full object-cover" />
                 </Link>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-semibold">{item.series.title}</p>

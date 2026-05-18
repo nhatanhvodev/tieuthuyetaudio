@@ -8,9 +8,11 @@ type ComparisonItem = {
 };
 
 const comparison: ComparisonItem[] = [
-  { feature: "Nghe truyen co quang cao", free: true, vip: false },
+  { feature: "Thu vien co san", free: "Tap thu + cac tap mo", vip: "Day du" },
+  { feature: "Tap premium", free: "Khoa mem", vip: true },
   { feature: "Dong bo tien trinh giua cac thiet bi", free: true, vip: true },
   { feature: "Tu dong phat tap tiep theo", free: true, vip: true },
+  { feature: "Bookmark + ghi chu", free: true, vip: true },
   { feature: "Ho tro offline PWA", free: false, vip: true },
   { feature: "Uu tien cap nhat noi dung moi", free: "Co ban", vip: "Uu tien" },
   { feature: "Ho tro nhanh 1-1", free: false, vip: true }
@@ -29,7 +31,7 @@ export function PlanComparison() {
     <section className="rounded-xl border bg-card/90 p-5 md:p-7">
       <div className="flex flex-wrap items-center gap-2">
         <Badge variant="accent">Bang so sanh</Badge>
-        <p className="text-sm text-muted-foreground">Phien ban Free vs VIP de chon goi phu hop.</p>
+        <p className="text-sm text-muted-foreground">Mo hinh v1 la hybrid: free + soft paywall cho cac tap premium duoc danh dau.</p>
       </div>
 
       <div className="mt-5 overflow-x-auto">
@@ -37,8 +39,8 @@ export function PlanComparison() {
           <thead>
             <tr className="border-b text-muted-foreground">
               <th className="py-3 pr-4 font-semibold">Tinh nang</th>
-              <th className="w-28 py-3 text-center font-semibold">Free</th>
-              <th className="w-28 py-3 text-center font-semibold">VIP</th>
+              <th className="w-32 py-3 text-center font-semibold">Free</th>
+              <th className="w-32 py-3 text-center font-semibold">VIP</th>
             </tr>
           </thead>
           <tbody>

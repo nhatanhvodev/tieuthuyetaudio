@@ -9,15 +9,15 @@
   --popover-foreground: #f8fafc;
   --primary: #f59e0b;
   --primary-foreground: #1c1000;
-  --secondary: #1f2937;
-  --secondary-foreground: #e5e7eb;
+  --secondary: #202938;
+  --secondary-foreground: #f1f5f9;
   --muted: #151b24;
-  --muted-foreground: #a8b0bd;
+  --muted-foreground: #c2cad6;
   --accent: #fbbf24;
   --accent-foreground: #1f1300;
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
-  --border: #2b3441;
+  --border: #364153;
   --input: #171d27;
   --ring: #fbbf24;
   --radius: 0.5rem;
@@ -99,5 +99,16 @@ svg {
 @media (pointer: coarse) {
   :where(button, input, select, textarea, a) {
     min-height: 44px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

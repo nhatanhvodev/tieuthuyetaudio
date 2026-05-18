@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronRight, Headphones, Star } from "lucide-react";
+import { CoverImage } from "@/components/common/cover-image";
 import { SeriesActions } from "@/components/series/series-actions";
 import { SeriesDetailTabs } from "@/components/series/series-detail-tabs";
 import { StoryShelf } from "@/components/series/story-shelf";
@@ -8,9 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { formatDuration } from "@/lib/format";
+import { formatCount, formatDuration, formatStatus } from "@/lib/format";
 import { getHomeShelves, getSeriesBySlug } from "@/lib/series/queries";
-import { formatCount, formatStatus } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +18,7 @@ export default async function SeriesDetailPage({ params }: { params: Promise<{ s
   const { slug } = await params;
   const [series, session] = await Promise.all([getSeriesBySlug(slug), auth()]);
   if (!series) notFound();
-  const related = await getHomeShelves();
+  const related = await getHomeShelves(session?.user?.id);
   const resumeProgress = session?.user
     ? await db.listenProgress.findFirst({
         where: {
@@ -45,26 +45,22 @@ export default async function SeriesDetailPage({ params }: { params: Promise<{ s
   return (
     <>
       <section className="relative overflow-hidden border-b">
-        {series.coverUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={series.coverUrl} alt="" loading="lazy" decoding="async" className="absolute inset-0 size-full object-cover opacity-25" />
-        ) : null}
+        <div className="absolute inset-0">
+          <CoverImage src={series.coverUrl} alt={series.title} priority sizes="100vw" className="absolute inset-0 size-full object-cover opacity-25" />
+        </div>
         <div className="absolute inset-0 bg-gradient-to-r from-background via-background/95 to-background/70" />
         <div className="relative mx-auto max-w-7xl px-4 py-6">
           <nav className="mb-5 flex items-center gap-2 text-sm text-muted-foreground">
-            <Link href="/">Trang chủ</Link>
+            <Link href="/">Trang chu</Link>
             <ChevronRight aria-hidden="true" className="size-4" />
-            <Link href="/truyen">Kho truyện</Link>
+            <Link href="/truyen">Kho truyen</Link>
             <ChevronRight aria-hidden="true" className="size-4" />
             <span className="truncate text-foreground">{series.title}</span>
           </nav>
 
           <div className="grid gap-8 md:grid-cols-[260px_1fr]">
             <div className="relative aspect-[3/4] overflow-hidden rounded-lg border bg-secondary shadow-2xl shadow-black/35">
-              {series.coverUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={series.coverUrl} alt="" loading="lazy" decoding="async" className="absolute inset-0 size-full object-cover" />
-              ) : null}
+              <CoverImage src={series.coverUrl} alt={series.title} priority sizes="(max-width: 768px) 90vw, 260px" className="absolute inset-0 size-full object-cover" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-transparent" />
               <p className="absolute inset-x-0 bottom-0 p-4 text-xl font-black text-white">{series.title}</p>
             </div>
@@ -79,19 +75,19 @@ export default async function SeriesDetailPage({ params }: { params: Promise<{ s
 
               <dl className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
                 <div className="rounded-lg border bg-card/90 p-4">
-                  <dt className="text-sm text-muted-foreground">Lượt nghe</dt>
+                  <dt className="text-sm text-muted-foreground">Luot nghe</dt>
                   <dd className="mt-1 flex items-center gap-2 text-xl font-black"><Headphones aria-hidden="true" /> {formatCount(series.listenCount)}</dd>
                 </div>
                 <div className="rounded-lg border bg-card/90 p-4">
-                  <dt className="text-sm text-muted-foreground">Số tập</dt>
+                  <dt className="text-sm text-muted-foreground">So tap</dt>
                   <dd className="mt-1 text-xl font-black">{series.episodeCount}</dd>
                 </div>
                 <div className="rounded-lg border bg-card/90 p-4">
-                  <dt className="text-sm text-muted-foreground">Đánh giá</dt>
+                  <dt className="text-sm text-muted-foreground">Danh gia</dt>
                   <dd className="mt-1 flex items-center gap-2 text-xl font-black"><Star aria-hidden="true" className="text-accent" /> {series.averageRating.toFixed(1)}</dd>
                 </div>
                 <div className="rounded-lg border bg-card/90 p-4">
-                  <dt className="text-sm text-muted-foreground">Sản xuất</dt>
+                  <dt className="text-sm text-muted-foreground">San xuat</dt>
                   <dd className="mt-1 truncate text-xl font-black">{series.producer}</dd>
                 </div>
               </dl>
@@ -130,7 +126,7 @@ export default async function SeriesDetailPage({ params }: { params: Promise<{ s
         }))}
       />
 
-      <StoryShelf title="Truyện liên quan" items={related.recommended.filter((item) => item.id !== series.id).slice(0, 6)} />
+      <StoryShelf title="Truyen lien quan" items={related.recommended.filter((item) => item.id !== series.id).slice(0, 6)} />
     </>
   );
 }

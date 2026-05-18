@@ -4,32 +4,32 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 
-const topics = ["Thảo luận", "Đề xuất", "Hỏi đáp", "Báo lỗi"];
+const topics = ["Thao luan", "De xuat", "Hoi dap", "Bao loi"];
 const posts = [
   {
-    title: "Ghim: góp ý trải nghiệm nghe trên mobile",
-    author: "Quản trị viên",
-    category: "Đề xuất",
+    title: "Ghim: gop y trai nghiem nghe tren mobile",
+    author: "Quan tri vien",
+    category: "De xuat",
     pinned: true,
-    content: "Hãy gửi lỗi hiển thị, yêu cầu thể loại mới hoặc phản hồi về player để nhóm phát triển ưu tiên trong các bản sau.",
+    content: "Hay gui loi hien thi, yeu cau the loai moi hoac phan hoi ve player de nhom phat trien uu tien trong cac ban sau.",
     likes: 38,
     comments: 12
   },
   {
-    title: "Nên thêm bộ lọc truyện đã hoàn thành",
+    title: "Nen them bo loc truyen da hoan thanh",
     author: "Minh Anh",
-    category: "Thảo luận",
+    category: "Thao luan",
     pinned: false,
-    content: "Khi nghe dài ngày mình thường muốn lọc nhanh các bộ đã hoàn thành để nghe liên tục không phải chờ tập mới.",
+    content: "Khi nghe dai ngay minh thuong muon loc nhanh cac bo da hoan thanh de nghe lien tuc khong phai cho tap moi.",
     likes: 21,
     comments: 7
   },
   {
-    title: "Player hiển thị giờ phút giây rất dễ theo dõi",
-    author: "Bạn nghe đêm",
-    category: "Hỏi đáp",
+    title: "Player hien thi gio phut giay rat de theo doi",
+    author: "Ban nghe dem",
+    category: "Hoi dap",
     pinned: false,
-    content: "Dòng thời gian mới rõ hơn, nhất là các tập dài. Mong có thêm nút hẹn giờ tắt trong phiên bản sau.",
+    content: "Dong thoi gian moi ro hon, nhat la cac tap dai. Mong co them nut hen gio tat trong phien ban sau.",
     likes: 16,
     comments: 5
   }
@@ -41,14 +41,14 @@ export default function CommunityPage() {
       <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
         <div className="min-w-0">
           <div className="rounded-lg border bg-card/90 p-5 md:p-7">
-            <p className="text-sm font-semibold text-accent">Cộng đồng</p>
-            <h1 className="mt-2 text-4xl font-black md:text-5xl">Góp ý và thảo luận</h1>
-            <p className="mt-3 max-w-2xl text-muted-foreground">Chia sẻ cảm nhận, báo lỗi giao diện, đề xuất truyện mới hoặc góp ý cho trải nghiệm nghe trên web và PWA.</p>
+            <p className="text-sm font-semibold text-accent">Cong dong</p>
+            <h1 className="mt-2 text-4xl font-black md:text-5xl">Gop y va thao luan</h1>
+            <p className="mt-3 max-w-2xl text-muted-foreground">Chia se cam nhan, bao loi giao dien, de xuat truyen moi hoac gop y cho trai nghiem nghe tren web va PWA.</p>
           </div>
 
           <Card className="mt-6">
             <CardHeader>
-              <CardTitle className="text-xl">Gửi góp ý</CardTitle>
+              <CardTitle className="text-xl">Gui gop y</CardTitle>
             </CardHeader>
             <CardContent className="grid gap-3">
               <div className="flex gap-2 overflow-x-auto pb-1">
@@ -58,10 +58,10 @@ export default function CommunityPage() {
                   </button>
                 ))}
               </div>
-              <Textarea aria-label="Nội dung góp ý" placeholder="Bạn muốn cải thiện điều gì?" className="min-h-28" />
+              <Textarea aria-label="Noi dung gop y" placeholder="Ban muon cai thien dieu gi?" className="min-h-28" />
               <Button className="w-fit">
                 <Send data-icon="inline-start" />
-                Gửi góp ý
+                Gui gop y
               </Button>
             </CardContent>
           </Card>
@@ -72,7 +72,7 @@ export default function CommunityPage() {
                 <div className="flex flex-wrap items-center gap-2">
                   {post.pinned ? <Pin aria-hidden="true" className="text-accent" /> : <MessageCircle aria-hidden="true" className="text-muted-foreground" />}
                   <span className="rounded-md bg-secondary px-2 py-1 text-xs font-semibold">{post.category}</span>
-                  <span className="text-sm text-muted-foreground">bởi {post.author}</span>
+                  <span className="text-sm text-muted-foreground">boi {post.author}</span>
                 </div>
                 <h2 className="mt-3 text-xl font-black">{post.title}</h2>
                 <p className="mt-2 leading-6 text-muted-foreground">{post.content}</p>
@@ -89,9 +89,9 @@ export default function CommunityPage() {
           <div className="rounded-lg border bg-card/90 p-5">
             <div className="flex items-center gap-2 text-accent">
               <Download aria-hidden="true" />
-              <h2 className="text-xl font-black">Cài ứng dụng</h2>
+              <h2 className="text-xl font-black">Cai ung dung</h2>
             </div>
-            <p className="mt-3 text-sm leading-6 text-muted-foreground">Người dùng mobile có thể cài website như app để mở nhanh và nghe truyện toàn màn hình.</p>
+            <p className="mt-3 text-sm leading-6 text-muted-foreground">Nguoi dung mobile co the cai website nhu app de mo nhanh va nghe truyen toan man hinh.</p>
             <div className="mt-4">
               <InstallAppButton />
             </div>
@@ -99,9 +99,9 @@ export default function CommunityPage() {
           <div className="rounded-lg border bg-card/90 p-5">
             <div className="flex items-center gap-2 text-accent">
               <Bug aria-hidden="true" />
-              <h2 className="text-xl font-black">Báo lỗi nhanh</h2>
+              <h2 className="text-xl font-black">Bao loi nhanh</h2>
             </div>
-            <p className="mt-3 text-sm leading-6 text-muted-foreground">Nếu thấy text tràn, nút khó bấm hoặc player che nội dung, hãy gửi góp ý kèm tên trang.</p>
+            <p className="mt-3 text-sm leading-6 text-muted-foreground">Neu thay text tran, nut kho bam hoac player che noi dung, hay gui gop y kem ten trang.</p>
           </div>
         </aside>
       </div>

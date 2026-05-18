@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { BookOpen, Crown, Flame, Headphones, Sparkles } from "lucide-react";
+import { CoverImage } from "@/components/common/cover-image";
 import { InstallAppButton } from "@/components/pwa/install-app-button";
 import { SearchBox } from "@/components/search/search-box";
 import { ContinueListeningShelf } from "@/components/series/continue-listening-shelf";
@@ -16,7 +17,7 @@ export const dynamic = "force-dynamic";
 export default async function HomePage() {
   const session = await auth();
   const [shelves, continueListening] = await Promise.all([
-    getHomeShelves(),
+    getHomeShelves(session?.user?.id),
     session?.user ? getContinueListeningByUser(session.user.id, 6) : Promise.resolve([])
   ]);
   const featured = shelves.popular[0] ?? shelves.latest[0];
@@ -24,10 +25,15 @@ export default async function HomePage() {
   return (
     <>
       <section className="relative overflow-hidden border-b">
-        {featured?.coverUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={featured.coverUrl} alt="" loading="lazy" decoding="async" className="absolute inset-0 size-full object-cover opacity-35" />
-        ) : null}
+        <div className="absolute inset-0">
+          <CoverImage
+            src={featured?.coverUrl}
+            alt={featured?.title ?? "Tieu thuyet Audio"}
+            priority
+            sizes="100vw"
+            className="absolute inset-0 size-full object-cover opacity-35"
+          />
+        </div>
         <div className="absolute inset-0 bg-gradient-to-r from-background via-background/92 to-background/45" />
         <div className="relative mx-auto grid max-w-7xl gap-8 px-4 py-10 md:grid-cols-[1.05fr_0.95fr] md:py-16">
           <div className="flex flex-col justify-center">
@@ -59,10 +65,13 @@ export default async function HomePage() {
           {featured ? (
             <div className="grid gap-4 md:grid-cols-[0.8fr_1fr] md:items-end">
               <Link href={`/truyen/${featured.slug}`} className="relative aspect-[3/4] overflow-hidden rounded-lg border shadow-2xl shadow-black/40">
-                {featured.coverUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={featured.coverUrl} alt="" loading="lazy" decoding="async" className="absolute inset-0 size-full object-cover" />
-                ) : null}
+                <CoverImage
+                  src={featured.coverUrl}
+                  alt={featured.title}
+                  priority
+                  sizes="(max-width: 768px) 90vw, 28vw"
+                  className="absolute inset-0 size-full object-cover"
+                />
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/25 to-transparent" />
                 <div className="absolute inset-x-0 bottom-0 p-4">
                   <Badge variant="accent">Xu huong</Badge>
@@ -108,7 +117,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <StoryShelf title="Xu huong hom nay" href="/truyen?sort=popular" items={shelves.popular} />
+      <StoryShelf title="Trending 24h" href="/truyen?sort=popular" items={shelves.trending24h} />
 
       <section className="mx-auto grid max-w-7xl gap-6 px-4 py-8 lg:grid-cols-[1fr_360px]">
         <div>
@@ -132,8 +141,14 @@ export default async function HomePage() {
         </aside>
       </section>
 
+      <StoryShelf title="Trending 7 ngay" href="/truyen?sort=popular" items={shelves.trending7d} />
+      <StoryShelf title="Rising" href="/truyen?sort=newest" items={shelves.rising} />
       <StoryShelf title="Truyen moi len ke" href="/truyen?sort=newest" items={shelves.latest} />
-      <StoryShelf title="Co the ban se thich" href="/truyen?sort=rating" items={shelves.recommended} />
+      <StoryShelf
+        title={shelves.recommendationMeta.personalized ? "Danh cho ban" : "Co the ban se thich"}
+        href="/truyen?sort=rating"
+        items={shelves.recommended}
+      />
     </>
   );
 }
