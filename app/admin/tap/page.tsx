@@ -16,11 +16,11 @@ export default async function AdminEpisodesPage() {
     <section className="min-h-screen bg-slate-50 px-4 py-8 text-slate-950">
       <div className="mx-auto max-w-7xl">
         <AdminNav />
-        <h1 className="my-8 text-4xl font-black">Quan ly tap</h1>
+        <h1 className="my-8 text-4xl font-black">Quản lý tập</h1>
         <EpisodeForm series={series} />
         <div className="mt-6 overflow-hidden rounded-lg border border-slate-200 bg-white">
           <Table>
-            <TableHeader><TableRow><TableHead>Truyen</TableHead><TableHead>Tap</TableHead><TableHead>Ten</TableHead><TableHead>Audio</TableHead></TableRow></TableHeader>
+            <TableHeader><TableRow><TableHead>Truyện</TableHead><TableHead>Tập</TableHead><TableHead>Tên</TableHead><TableHead>URL audio</TableHead></TableRow></TableHeader>
             <TableBody>
               {episodes.map((episode) => (
                 <TableRow key={episode.id}>

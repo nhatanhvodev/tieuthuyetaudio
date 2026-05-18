@@ -39,7 +39,7 @@ export function SeriesForm({ value = {} }: { value?: SeriesFormValue }) {
         body: JSON.stringify(payload)
       });
       if (!response.ok) {
-        setMessage("Khong the luu truyen");
+        setMessage("Không thể lưu truyện");
         return;
       }
       router.push("/admin/truyen");
@@ -50,34 +50,34 @@ export function SeriesForm({ value = {} }: { value?: SeriesFormValue }) {
   return (
     <form action={submit} className="grid gap-4 rounded-lg border border-slate-200 bg-white p-5 text-slate-950">
       <div className="grid gap-2">
-        <Label htmlFor="title">Ten truyen</Label>
+        <Label htmlFor="title">Tên truyện</Label>
         <Input id="title" name="title" defaultValue={value.title} className="bg-white text-slate-950" required />
       </div>
       <div className="grid gap-2">
-        <Label htmlFor="slug">Slug</Label>
+        <Label htmlFor="slug">Đường dẫn slug</Label>
         <Input id="slug" name="slug" defaultValue={value.slug} className="bg-white text-slate-950" required />
       </div>
       <div className="grid gap-2">
-        <Label htmlFor="producer">Nha san xuat</Label>
+        <Label htmlFor="producer">Nhà sản xuất</Label>
         <Input id="producer" name="producer" defaultValue={value.producer ?? ""} className="bg-white text-slate-950" />
       </div>
       <div className="grid gap-2">
-        <Label htmlFor="status">Trang thai</Label>
+        <Label htmlFor="status">Trạng thái</Label>
         <select id="status" name="status" defaultValue={value.status ?? "ONGOING"} className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm">
-          <option value="ONGOING">Dang cap nhat</option>
-          <option value="COMPLETED">Hoan thanh</option>
+          <option value="ONGOING">Đang cập nhật</option>
+          <option value="COMPLETED">Hoàn thành</option>
         </select>
       </div>
       <div className="grid gap-2">
-        <Label htmlFor="coverUrl">Cover URL</Label>
+        <Label htmlFor="coverUrl">URL ảnh bìa</Label>
         <Input id="coverUrl" name="coverUrl" defaultValue={value.coverUrl ?? ""} className="bg-white text-slate-950" />
       </div>
       <div className="grid gap-2">
-        <Label htmlFor="description">Mo ta</Label>
+        <Label htmlFor="description">Mô tả</Label>
         <Textarea id="description" name="description" defaultValue={value.description ?? ""} className="bg-white text-slate-950" />
       </div>
       {message ? <p className="text-sm text-red-600">{message}</p> : null}
-      <Button type="submit" disabled={isPending}>{isPending ? "Dang luu..." : "Luu truyen"}</Button>
+      <Button type="submit" disabled={isPending}>{isPending ? "Đang lưu..." : "Lưu truyện"}</Button>
     </form>
   );
 }

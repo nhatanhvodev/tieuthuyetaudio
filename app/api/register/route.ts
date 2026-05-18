@@ -13,12 +13,12 @@ export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
   const parsed = registerSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ error: "Thong tin dang ky khong hop le" }, { status: 400 });
+    return NextResponse.json({ error: "Thông tin đăng ký không hợp lệ" }, { status: 400 });
   }
 
   const existing = await db.user.findUnique({ where: { email: parsed.data.email } });
   if (existing) {
-    return NextResponse.json({ error: "Email da duoc su dung" }, { status: 409 });
+    return NextResponse.json({ error: "Email đã được sử dụng" }, { status: 409 });
   }
 
   await db.user.create({

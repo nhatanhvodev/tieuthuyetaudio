@@ -6,7 +6,7 @@ import { episodeInputSchema } from "@/lib/admin/validators";
 export async function POST(request: Request) {
   await requireAdmin();
   const parsed = episodeInputSchema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: "Invalid episode" }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Tập không hợp lệ" }, { status: 400 });
   const data = parsed.data;
   const episode = await db.episode.upsert({
     where: {

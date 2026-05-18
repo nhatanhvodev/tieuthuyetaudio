@@ -24,7 +24,7 @@ export function LoginForm() {
         redirect: false
       });
       if (result?.error) {
-        setError("Email hoac mat khau khong dung");
+        setError("Email hoặc mật khẩu không đúng");
         return;
       }
       router.push(callbackUrl);
@@ -35,8 +35,8 @@ export function LoginForm() {
   return (
     <Card className="w-full max-w-md">
       <CardHeader>
-        <CardTitle>Dang nhap</CardTitle>
-        <CardDescription>Dang nhap de dong bo tien trinh nghe va thu vien.</CardDescription>
+        <CardTitle>Đăng nhập</CardTitle>
+        <CardDescription>Đồng bộ tiến trình nghe và thư viện theo dõi của bạn.</CardDescription>
       </CardHeader>
       <CardContent>
         <form action={onSubmit} className="flex flex-col gap-4">
@@ -45,12 +45,12 @@ export function LoginForm() {
             <Input id="email" name="email" type="email" required defaultValue="user@tieuthuyetaudio.local" />
           </div>
           <div className="flex flex-col gap-2">
-            <Label htmlFor="password">Mat khau</Label>
+            <Label htmlFor="password">Mật khẩu</Label>
             <Input id="password" name="password" type="password" required defaultValue="User@123456" />
           </div>
           {error ? <p className="text-sm text-destructive">{error}</p> : null}
           <Button type="submit" disabled={isPending}>
-            {isPending ? "Dang xu ly..." : "Dang nhap"}
+            {isPending ? "Đang xử lý..." : "Đăng nhập"}
           </Button>
         </form>
       </CardContent>

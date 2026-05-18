@@ -30,7 +30,7 @@ export function RegisterForm() {
       });
       if (!response.ok) {
         const payload = (await response.json().catch(() => null)) as { error?: string } | null;
-        setMessage(payload?.error ?? "Khong the dang ky");
+        setMessage(payload?.error ?? "Không thể đăng ký");
         return;
       }
       await signIn("credentials", { email, password, redirect: false });
@@ -42,13 +42,13 @@ export function RegisterForm() {
   return (
     <Card className="w-full max-w-md">
       <CardHeader>
-        <CardTitle>Dang ky</CardTitle>
-        <CardDescription>Tao tai khoan de luu thu vien va tien trinh nghe.</CardDescription>
+        <CardTitle>Đăng ký</CardTitle>
+        <CardDescription>Tạo tài khoản để lưu thư viện và tiến trình nghe.</CardDescription>
       </CardHeader>
       <CardContent>
         <form action={onSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
-            <Label htmlFor="name">Ten hien thi</Label>
+            <Label htmlFor="name">Tên hiển thị</Label>
             <Input id="name" name="name" required />
           </div>
           <div className="flex flex-col gap-2">
@@ -56,12 +56,12 @@ export function RegisterForm() {
             <Input id="email" name="email" type="email" required />
           </div>
           <div className="flex flex-col gap-2">
-            <Label htmlFor="password">Mat khau</Label>
+            <Label htmlFor="password">Mật khẩu</Label>
             <Input id="password" name="password" type="password" minLength={8} required />
           </div>
           {message ? <p className="text-sm text-destructive">{message}</p> : null}
           <Button type="submit" disabled={isPending}>
-            {isPending ? "Dang xu ly..." : "Dang ky"}
+            {isPending ? "Đang xử lý..." : "Đăng ký"}
           </Button>
         </form>
       </CardContent>

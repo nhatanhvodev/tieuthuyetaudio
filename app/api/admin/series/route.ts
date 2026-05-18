@@ -6,7 +6,7 @@ import { seriesInputSchema } from "@/lib/admin/validators";
 export async function POST(request: Request) {
   await requireAdmin();
   const parsed = seriesInputSchema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: "Invalid series" }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Truyện không hợp lệ" }, { status: 400 });
   const data = parsed.data;
   const series = await db.series.create({
     data: {

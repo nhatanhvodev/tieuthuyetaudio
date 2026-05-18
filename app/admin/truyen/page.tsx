@@ -15,20 +15,20 @@ export default async function AdminSeriesPage() {
       <div className="mx-auto max-w-7xl">
         <AdminNav />
         <div className="mt-8 flex items-center justify-between">
-          <h1 className="text-4xl font-black">Quan ly truyen</h1>
-          <Button asChild><Link href="/admin/truyen/new">Them truyen</Link></Button>
+          <h1 className="text-4xl font-black">Quản lý truyện</h1>
+          <Button asChild><Link href="/admin/truyen/new">Thêm truyện</Link></Button>
         </div>
         <div className="mt-6 overflow-hidden rounded-lg border border-slate-200 bg-white">
           <Table>
-            <TableHeader><TableRow><TableHead>Ten</TableHead><TableHead>Slug</TableHead><TableHead>Status</TableHead><TableHead>Tap</TableHead><TableHead /></TableRow></TableHeader>
+            <TableHeader><TableRow><TableHead>Tên</TableHead><TableHead>Đường dẫn</TableHead><TableHead>Trạng thái</TableHead><TableHead>Tập</TableHead><TableHead /></TableRow></TableHeader>
             <TableBody>
               {series.map((item) => (
                 <TableRow key={item.id}>
                   <TableCell>{item.title}</TableCell>
                   <TableCell>{item.slug}</TableCell>
-                  <TableCell>{item.status}</TableCell>
+                  <TableCell>{item.status === "COMPLETED" ? "Hoàn thành" : "Đang cập nhật"}</TableCell>
                   <TableCell>{item.episodeCount}</TableCell>
-                  <TableCell><Link className="font-semibold text-teal-700" href={`/admin/truyen/${item.id}/edit`}>Sua</Link></TableCell>
+                  <TableCell><Link className="font-semibold text-teal-700" href={`/admin/truyen/${item.id}/edit`}>Sửa</Link></TableCell>
                 </TableRow>
               ))}
             </TableBody>

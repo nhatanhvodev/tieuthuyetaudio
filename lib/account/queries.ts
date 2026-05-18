@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import { seriesInclude } from "@/lib/series/queries";
+import { getContinueListeningByUser, seriesInclude } from "@/lib/series/queries";
 
 export async function getAccountOverview(userId: string) {
   return db.user.findUnique({
@@ -28,6 +28,10 @@ export async function getListeningHistory(userId: string) {
     },
     take: 20
   });
+}
+
+export async function getContinueListeningHistory(userId: string, take = 12) {
+  return getContinueListeningByUser(userId, take);
 }
 
 export async function getFollowedSeries(userId: string) {

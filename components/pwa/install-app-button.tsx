@@ -60,13 +60,13 @@ export function InstallAppButton({ compact = false }: { compact?: boolean }) {
     <div className="relative">
       <Button type="button" size={compact ? "sm" : "default"} variant={compact ? "outline" : "default"} onClick={install}>
         <Download data-icon="inline-start" />
-        Tai app
+        {compact ? "App" : "Tải app"}
       </Button>
       {showGuide ? (
         <div className="absolute right-0 top-11 z-50 w-72 rounded-md border bg-popover p-3 text-sm text-popover-foreground shadow-lg">
-          <p className="font-semibold">Cai nhu app tren dien thoai</p>
+          <p className="font-semibold">Cài như app trên điện thoại</p>
           <p className="mt-1 text-muted-foreground">
-            Mo bang Chrome hoac Edge tren Android, chon menu trinh duyet, roi chon Add to Home screen hoac Install app.
+            Mở bằng Chrome hoặc Edge trên Android, chọn menu trình duyệt rồi chọn Thêm vào màn hình chính hoặc Cài đặt ứng dụng.
           </p>
         </div>
       ) : null}

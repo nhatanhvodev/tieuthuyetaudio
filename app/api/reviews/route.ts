@@ -11,9 +11,9 @@ const reviewSchema = z.object({
 
 export async function POST(request: Request) {
   const session = await auth();
-  if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session?.user) return NextResponse.json({ error: "Chưa đăng nhập" }, { status: 401 });
   const parsed = reviewSchema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: "Invalid review" }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Đánh giá không hợp lệ" }, { status: 400 });
 
   await db.review.upsert({
     where: { userId_seriesId: { userId: session.user.id, seriesId: parsed.data.seriesId } },

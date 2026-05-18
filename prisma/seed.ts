@@ -4,12 +4,12 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 const categories = [
-  { slug: "ngon-tinh", name: "Ngon tinh" },
-  { slug: "tien-hiep", name: "Tien hiep" },
-  { slug: "kiem-hiep", name: "Kiem hiep" },
-  { slug: "trinh-tham", name: "Trinh tham" },
-  { slug: "do-thi", name: "Do thi" },
-  { slug: "xuyen-khong", name: "Xuyen khong" }
+  { slug: "ngon-tinh", name: "Ngôn tình" },
+  { slug: "tien-hiep", name: "Tiên hiệp" },
+  { slug: "kiem-hiep", name: "Kiếm hiệp" },
+  { slug: "trinh-tham", name: "Trinh thám" },
+  { slug: "do-thi", name: "Đô thị" },
+  { slug: "xuyen-khong", name: "Xuyên không" }
 ];
 
 const audioUrls = [
@@ -21,87 +21,96 @@ const audioUrls = [
 const series = [
   {
     slug: "dinh-menh-ben-em",
-    title: "Dinh Menh Ben Em",
-    producer: "Demo Studio",
+    title: "Định Mệnh Bên Em",
+    coverUrl: "/covers/dinh-menh-ben-em.svg",
+    producer: "Xưởng Demo",
     status: "COMPLETED",
     listenCount: 28400,
     averageRating: 4.9,
     categories: ["ngon-tinh", "do-thi"],
-    description: "Mot cau chuyen tinh cam do thi duoc tao rieng cho du lieu demo cua ung dung nghe truyen."
+    description: "Một câu chuyện tình cảm đô thị được tạo riêng cho dữ liệu demo của ứng dụng nghe truyện."
   },
   {
     slug: "thanh-mai-ngay-ay",
-    title: "Thanh Mai Ngay Ay",
-    producer: "Demo Audio",
+    title: "Thanh Mai Ngày Ấy",
+    coverUrl: "/covers/thanh-mai-ngay-ay.svg",
+    producer: "Âm Thanh Demo",
     status: "ONGOING",
     listenCount: 7100,
     averageRating: 4.7,
     categories: ["ngon-tinh"],
-    description: "Truyen demo ve tuoi tre, tinh ban va nhung lua chon truong thanh trong thanh pho."
+    description: "Truyện demo về tuổi trẻ, tình bạn và những lựa chọn trưởng thành trong thành phố."
   },
   {
     slug: "kiem-anh-troi-nam",
-    title: "Kiem Anh Troi Nam",
-    producer: "Nam Son Voice",
+    title: "Kiếm Ảnh Trời Nam",
+    coverUrl: "/covers/kiem-anh-troi-nam.svg",
+    producer: "Nam Sơn Voice",
     status: "ONGOING",
     listenCount: 19800,
     averageRating: 4.8,
     categories: ["kiem-hiep"],
-    description: "Mot hanh trinh giang ho gia tuong voi nhan vat, dia danh va tinh tiet hoan toan demo."
+    description: "Một hành trình giang hồ giả tưởng với nhân vật, địa danh và tình tiết hoàn toàn demo."
   },
   {
     slug: "mat-ma-pho-cu",
-    title: "Mat Ma Pho Cu",
-    producer: "Noir Lab",
+    title: "Mật Mã Phố Cũ",
+    coverUrl: "/covers/mat-ma-pho-cu.svg",
+    producer: "Phòng Thu Đêm",
     status: "COMPLETED",
     listenCount: 15320,
     averageRating: 4.6,
     categories: ["trinh-tham", "do-thi"],
-    description: "Vu an bi an trong khu pho cu, noi moi dau vet dan toi mot bi mat da bi chon giau."
+    description: "Vụ án bí ẩn trong khu phố cũ, nơi mọi dấu vết dẫn tới một bí mật đã bị chôn giấu."
   },
   {
     slug: "tien-lo-ngan-ha",
-    title: "Tien Lo Ngan Ha",
-    producer: "Cloud Tale",
+    title: "Tiên Lộ Ngân Hà",
+    coverUrl: "/covers/tien-lo-ngan-ha.svg",
+    producer: "Mây Kể Chuyện",
     status: "ONGOING",
     listenCount: 42100,
     averageRating: 4.9,
     categories: ["tien-hiep"],
-    description: "The gioi tu tien rong lon voi cac tang troi, phap bao va loi hua tu thuo nien thieu."
+    description: "Thế giới tu tiên rộng lớn với các tầng trời, pháp bảo và lời hứa từ thuở niên thiếu."
   },
   {
     slug: "quan-ca-phe-thang-sau",
-    title: "Quan Ca Phe Thang Sau",
-    producer: "Lotus Audio",
+    title: "Quán Cà Phê Tháng Sáu",
+    coverUrl: "/covers/quan-ca-phe-thang-sau.svg",
+    producer: "Sen Audio",
     status: "COMPLETED",
     listenCount: 9300,
     averageRating: 4.5,
     categories: ["do-thi"],
-    description: "Nhung cuoc gap go nhe nhang trong mot quan ca phe nho, noi moi nguoi de lai mot cau chuyen."
+    description: "Những cuộc gặp gỡ nhẹ nhàng trong một quán cà phê nhỏ, nơi mỗi người để lại một câu chuyện."
   },
   {
     slug: "lac-vao-trieu-dai-la",
-    title: "Lac Vao Trieu Dai La",
-    producer: "Time Gate",
+    title: "Lạc Vào Triều Đại Lạ",
+    coverUrl: "/covers/lac-vao-trieu-dai-la.svg",
+    producer: "Cổng Thời Gian",
     status: "ONGOING",
     listenCount: 12780,
     averageRating: 4.4,
     categories: ["xuyen-khong"],
-    description: "Mot nhan vien van phong tinh day trong mot trieu dai khong co trong lich su."
+    description: "Một nhân viên văn phòng tỉnh dậy trong một triều đại không có trong lịch sử."
   },
   {
     slug: "nguoi-giu-den-bien",
-    title: "Nguoi Giu Den Bien",
-    producer: "Harbor Voice",
+    title: "Người Giữ Đèn Biển",
+    coverUrl: "/covers/nguoi-giu-den-bien.svg",
+    producer: "Giọng Cảng Biển",
     status: "COMPLETED",
     listenCount: 22100,
     averageRating: 4.8,
     categories: ["trinh-tham"],
-    description: "Ngon hai dang cu va nhung tin hieu la dan mot dieu tra vien tro lai thi tran ven bien."
+    description: "Ngọn hải đăng cũ và những tín hiệu lạ dẫn một điều tra viên trở lại thị trấn ven biển."
   }
 ] satisfies Array<{
   slug: string;
   title: string;
+  coverUrl: string;
   producer: string;
   status: "ONGOING" | "COMPLETED";
   listenCount: number;
@@ -128,7 +137,7 @@ async function main() {
     update: {},
     create: {
       email: "user@tieuthuyetaudio.local",
-      name: "Demo User",
+      name: "Người dùng demo",
       passwordHash: await bcrypt.hash("User@123456", 12),
       role: "USER",
       isVip: false
@@ -149,6 +158,7 @@ async function main() {
       update: {
         title: item.title,
         description: item.description,
+        coverUrl: item.coverUrl,
         producer: item.producer,
         status: item.status,
         listenCount: item.listenCount,
@@ -159,6 +169,7 @@ async function main() {
         slug: item.slug,
         title: item.title,
         description: item.description,
+        coverUrl: item.coverUrl,
         producer: item.producer,
         status: item.status,
         listenCount: item.listenCount,
@@ -180,7 +191,7 @@ async function main() {
       await prisma.episode.upsert({
         where: { seriesId_episodeNumber: { seriesId: created.id, episodeNumber } },
         update: {
-          title: `Tap ${episodeNumber}: Chuong demo ${episodeNumber}`,
+          title: `Tập ${episodeNumber}: Chương demo ${episodeNumber}`,
           audioUrl: audioUrls[(episodeNumber - 1) % audioUrls.length],
           durationSeconds: 600 + episodeNumber * 180,
           listenCount: Math.max(100, item.listenCount - episodeNumber * 1200)
@@ -188,7 +199,7 @@ async function main() {
         create: {
           seriesId: created.id,
           episodeNumber,
-          title: `Tap ${episodeNumber}: Chuong demo ${episodeNumber}`,
+          title: `Tập ${episodeNumber}: Chương demo ${episodeNumber}`,
           audioUrl: audioUrls[(episodeNumber - 1) % audioUrls.length],
           durationSeconds: 600 + episodeNumber * 180,
           listenCount: Math.max(100, item.listenCount - episodeNumber * 1200)
@@ -205,8 +216,8 @@ async function main() {
 
       await prisma.review.upsert({
         where: { userId_seriesId: { userId: user.id, seriesId: created.id } },
-        update: { rating: 5, content: "Truyen demo nghe rat on tren mobile." },
-        create: { userId: user.id, seriesId: created.id, rating: 5, content: "Truyen demo nghe rat on tren mobile." }
+        update: { rating: 5, content: "Truyện demo nghe rất ổn trên mobile." },
+        create: { userId: user.id, seriesId: created.id, rating: 5, content: "Truyện demo nghe rất ổn trên mobile." }
       });
     }
   }
@@ -220,7 +231,7 @@ async function main() {
     });
   }
 
-  console.log(`Seeded admin ${admin.email} and user ${user.email}`);
+  console.log(`Đã seed admin ${admin.email} và user ${user.email}`);
 }
 
 main()

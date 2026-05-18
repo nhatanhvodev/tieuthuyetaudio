@@ -21,7 +21,7 @@ export function UserVipToggle({ userId, isVip }: { userId: string; isVip: boolea
 
   return (
     <Button type="button" size="sm" variant={isVip ? "secondary" : "default"} disabled={isPending} onClick={toggle}>
-      {isVip ? "Go VIP" : "Bat VIP"}
+      {isVip ? "Tắt VIP" : "Bật VIP"}
     </Button>
   );
 }

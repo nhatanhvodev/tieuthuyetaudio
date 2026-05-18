@@ -7,7 +7,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   await requireAdmin();
   const { id } = await params;
   const parsed = vipToggleSchema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: "Invalid VIP state" }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Trạng thái VIP không hợp lệ" }, { status: 400 });
   const user = await db.user.update({
     where: { id },
     data: { isVip: parsed.data.isVip }

@@ -1,14 +1,16 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { WebVitalsReporter } from "@/components/analytics/web-vitals-reporter";
 import { AppFrame } from "@/components/layout/app-frame";
+import { featureFlags } from "@/lib/features";
 
 export const metadata: Metadata = {
   title: {
-    default: "Tieu thuyet Audio",
-    template: "%s | Tieu thuyet Audio"
+    default: "Tiểu thuyết Audio",
+    template: "%s | Tiểu thuyết Audio"
   },
-  description: "Nghe tieu thuyet audio tieng Viet voi player PWA, thu vien truyen va tien trinh nghe.",
-  applicationName: "Tieu thuyet Audio",
+  description: "Nghe tiểu thuyết audio tiếng Việt với player PWA, thư viện truyện và tiến trình nghe.",
+  applicationName: "Tiểu thuyết Audio",
   manifest: "/manifest.webmanifest"
 };
 
@@ -21,7 +23,8 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="vi">
-      <body>
+      <body data-feature-flags={JSON.stringify(featureFlags)}>
+        <WebVitalsReporter />
         <AppFrame>{children}</AppFrame>
       </body>
     </html>

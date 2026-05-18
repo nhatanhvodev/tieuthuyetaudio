@@ -27,6 +27,7 @@ model User {
   follows       Follow[]
   reviews       Review[]
   progresses    ListenProgress[]
+  bookmarks     Bookmark[]
   accounts      Account[]
   sessions      Session[]
   createdAt     DateTime         @default(now())
@@ -100,6 +101,7 @@ model Episode {
   durationSeconds Int?
   listenCount     Int              @default(0)
   progresses      ListenProgress[]
+  bookmarks       Bookmark[]
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
 
@@ -160,4 +162,18 @@ model ListenProgress {
   updatedAt       DateTime @updatedAt
 
   @@unique([userId, episodeId])
+}
+
+model Bookmark {
+  id        String   @id @default(cuid())
+  userId    String
+  episodeId String
+  second    Int
+  note      String?  @db.Text
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  episode   Episode  @relation(fields: [episodeId], references: [id], onDelete: Cascade)
+
+  @@index([userId, episodeId, second])
+  @@index([episodeId])
 }

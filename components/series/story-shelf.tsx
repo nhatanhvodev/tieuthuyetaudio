@@ -8,9 +8,9 @@ export function StoryShelf({ title, href, items }: { title: string; href?: strin
     <section className="mx-auto max-w-7xl px-4 py-8">
       <div className="mb-4 flex items-center justify-between gap-4">
         <h2 className="text-2xl font-black">{title}</h2>
-        {href ? <Link href={href} className="text-sm font-semibold text-primary">Xem tat ca</Link> : null}
+        {href ? <Link href={href} className="text-sm font-semibold text-accent">Xem tất cả</Link> : null}
       </div>
-      <div className="grid grid-flow-col auto-cols-[72%] gap-4 overflow-x-auto pb-2 sm:auto-cols-[42%] md:grid-flow-row md:grid-cols-4 lg:grid-cols-6">
+      <div className="grid grid-flow-col auto-cols-[70%] gap-4 overflow-x-auto pb-2 sm:auto-cols-[40%] md:grid-flow-row md:grid-cols-4 lg:grid-cols-6">
         {items.map((series) => (
           <StoryCard key={series.id} series={series} />
         ))}

@@ -26,7 +26,7 @@ export function EpisodeForm({ series }: { series: Array<{ id: string; title: str
         })
       });
       if (!response.ok) {
-        setMessage("Khong the luu tap");
+        setMessage("Không thể lưu tập");
         return;
       }
       router.refresh();
@@ -36,29 +36,29 @@ export function EpisodeForm({ series }: { series: Array<{ id: string; title: str
   return (
     <form action={submit} className="grid gap-4 rounded-lg border border-slate-200 bg-white p-5 text-slate-950 md:grid-cols-2">
       <div className="grid gap-2">
-        <Label htmlFor="seriesId">Truyen</Label>
+        <Label htmlFor="seriesId">Truyện</Label>
         <select id="seriesId" name="seriesId" className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm">
           {series.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}
         </select>
       </div>
       <div className="grid gap-2">
-        <Label htmlFor="episodeNumber">So tap</Label>
+        <Label htmlFor="episodeNumber">Số tập</Label>
         <Input id="episodeNumber" name="episodeNumber" type="number" min={1} className="bg-white text-slate-950" required />
       </div>
       <div className="grid gap-2">
-        <Label htmlFor="title">Ten tap</Label>
+        <Label htmlFor="title">Tên tập</Label>
         <Input id="title" name="title" className="bg-white text-slate-950" required />
       </div>
       <div className="grid gap-2">
-        <Label htmlFor="durationSeconds">Thoi luong giay</Label>
+        <Label htmlFor="durationSeconds">Thời lượng giây</Label>
         <Input id="durationSeconds" name="durationSeconds" type="number" className="bg-white text-slate-950" />
       </div>
       <div className="grid gap-2 md:col-span-2">
-        <Label htmlFor="audioUrl">Audio URL</Label>
+        <Label htmlFor="audioUrl">URL audio</Label>
         <Input id="audioUrl" name="audioUrl" className="bg-white text-slate-950" />
       </div>
       {message ? <p className="text-sm text-red-600 md:col-span-2">{message}</p> : null}
-      <Button type="submit" disabled={isPending} className="md:col-span-2">{isPending ? "Dang luu..." : "Them tap"}</Button>
+      <Button type="submit" disabled={isPending} className="md:col-span-2">{isPending ? "Đang lưu..." : "Thêm tập"}</Button>
     </form>
   );
 }
