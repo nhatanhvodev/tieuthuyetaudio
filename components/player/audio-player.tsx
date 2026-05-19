@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type MouseEvent } from "react";
 import { BookmarkPlus, Pause, Play, RotateCcw, RotateCw, Volume2 } from "lucide-react";
 import { BookmarkList } from "@/components/player/bookmark-list";
 import { Button } from "@/components/ui/button";
@@ -55,6 +55,7 @@ export function AudioPlayer({
   const [isSavingBookmark, setIsSavingBookmark] = useState(false);
   const [savingBookmarkId, setSavingBookmarkId] = useState<string | null>(null);
   const [deletingBookmarkId, setDeletingBookmarkId] = useState<string | null>(null);
+  const [waveHoverSeconds, setWaveHoverSeconds] = useState<number | null>(null);
 
   useEffect(() => {
     const nextQueue = queue?.length ? queue : [episode];
@@ -69,6 +70,45 @@ export function AudioPlayer({
       ? currentQueueIndex
       : resolvedQueue.findIndex((item) => item.episodeId === activeEpisode.episodeId);
   const nextEpisode = resolvedQueueIndex >= 0 ? resolvedQueue[resolvedQueueIndex + 1] ?? null : null;
+  const progressPercent = progress.durationSeconds > 0 ? Math.max(0, Math.min(100, (progress.currentSeconds / progress.durationSeconds) * 100)) : 0;
+
+  useEffect(() => {
+    const handleKeyboard = (event: KeyboardEvent) => {
+      const target = event.target;
+      if (
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement ||
+        target instanceof HTMLSelectElement ||
+        (target instanceof HTMLElement && (target.isContentEditable || Boolean(target.closest("button"))))
+      ) {
+        return;
+      }
+
+      switch (event.key) {
+        case " ":
+          event.preventDefault();
+          togglePlay();
+          break;
+        case "ArrowLeft": {
+          event.preventDefault();
+          const { currentSeconds } = usePlayerStore.getState().progress;
+          requestSeek(currentSeconds - 10);
+          break;
+        }
+        case "ArrowRight": {
+          event.preventDefault();
+          const { currentSeconds } = usePlayerStore.getState().progress;
+          requestSeek(currentSeconds + 10);
+          break;
+        }
+        default:
+          break;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyboard);
+    return () => window.removeEventListener("keydown", handleKeyboard);
+  }, [requestSeek, togglePlay]);
 
   useEffect(() => {
     setBookmarks(sortBookmarks(initialBookmarks));
@@ -93,7 +133,7 @@ export function AudioPlayer({
         const payload = await response.json().catch(() => null);
         if (!response.ok) {
           if (!cancelled) {
-            setBookmarkStatus(payload?.error ?? "Khong tai duoc moc nghe.");
+            setBookmarkStatus(payload?.error ?? "Không tải được mốc nghe.");
           }
           return;
         }
@@ -102,7 +142,7 @@ export function AudioPlayer({
           setBookmarks(sortBookmarks((payload?.bookmarks ?? []) as BookmarkTimelineItem[]));
         }
       } catch {
-        if (!cancelled) setBookmarkStatus("Khong tai duoc moc nghe.");
+        if (!cancelled) setBookmarkStatus("Không tải được mốc nghe.");
       } finally {
         if (!cancelled) setIsLoadingBookmarks(false);
       }
@@ -123,13 +163,20 @@ export function AudioPlayer({
     requestSeek(Number(value));
   }
 
+  function getWaveSeekFromPointer(event: MouseEvent<HTMLDivElement>) {
+    const rect = event.currentTarget.getBoundingClientRect();
+    if (!progress.durationSeconds || rect.width <= 0) return 0;
+    const ratio = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
+    return Math.floor(ratio * progress.durationSeconds);
+  }
+
   function sleepTimerSummary() {
-    if (sleepTimer.mode === "end_of_episode") return "Hen gio: den het tap";
+    if (sleepTimer.mode === "end_of_episode") return "Hẹn giờ: đến hết tập";
     if (sleepTimer.mode === "minutes" && sleepTimer.expiresAt) {
       const remaining = Math.max(0, Math.ceil((sleepTimer.expiresAt - Date.now()) / 60000));
-      return `Hen gio: ${remaining} phut`;
+      return `Hẹn giờ: ${remaining} phút`;
     }
-    return "Hen gio: tat";
+    return "Hẹn giờ: tắt";
   }
 
   async function createBookmark() {
@@ -153,14 +200,14 @@ export function AudioPlayer({
 
       const payload = await response.json().catch(() => null);
       if (!response.ok) {
-        setBookmarkStatus(payload?.error ?? "Khong luu duoc moc nghe.");
+        setBookmarkStatus(payload?.error ?? "Không lưu được mốc nghe.");
         return;
       }
 
       const nextBookmark = payload?.bookmark as BookmarkTimelineItem;
       setBookmarks((currentItems) => sortBookmarks([...currentItems, nextBookmark]));
       setBookmarkNote("");
-      setBookmarkStatus(`Da luu moc tai ${formatSeconds(nextBookmark.second)}.`);
+      setBookmarkStatus(`Đã lưu mốc tại ${formatSeconds(nextBookmark.second)}.`);
       emitAnalyticsPayload(
         buildPlayerEventPayload({
           eventName: "bookmark_create",
@@ -173,7 +220,7 @@ export function AudioPlayer({
         })
       );
     } catch {
-      setBookmarkStatus("Khong luu duoc moc nghe.");
+      setBookmarkStatus("Không lưu được mốc nghe.");
     } finally {
       setIsSavingBookmark(false);
     }
@@ -207,16 +254,16 @@ export function AudioPlayer({
       const payload = await response.json().catch(() => null);
       if (!response.ok) {
         setBookmarks(previousBookmarks);
-        setBookmarkStatus(payload?.error ?? "Khong cap nhat duoc ghi chu.");
+        setBookmarkStatus(payload?.error ?? "Không cập nhật được ghi chú.");
         return;
       }
 
       const updatedBookmark = payload?.bookmark as BookmarkTimelineItem;
       setBookmarks((currentItems) => sortBookmarks(currentItems.map((item) => (item.id === bookmarkId ? updatedBookmark : item))));
-      setBookmarkStatus("Da cap nhat ghi chu.");
+      setBookmarkStatus("Đã cập nhật ghi chú.");
     } catch {
       setBookmarks(previousBookmarks);
-      setBookmarkStatus("Khong cap nhat duoc ghi chu.");
+      setBookmarkStatus("Không cập nhật được ghi chú.");
     } finally {
       setSavingBookmarkId(null);
     }
@@ -240,78 +287,103 @@ export function AudioPlayer({
       const payload = await response.json().catch(() => null);
       if (!response.ok) {
         setBookmarks(previousBookmarks);
-        setBookmarkStatus(payload?.error ?? "Khong xoa duoc moc nghe.");
+        setBookmarkStatus(payload?.error ?? "Không xóa được mốc nghe.");
         return;
       }
 
-      setBookmarkStatus("Da xoa moc nghe.");
+      setBookmarkStatus("Đã xóa mốc nghe.");
     } catch {
       setBookmarks(previousBookmarks);
-      setBookmarkStatus("Khong xoa duoc moc nghe.");
+      setBookmarkStatus("Không xóa được mốc nghe.");
     } finally {
       setDeletingBookmarkId(null);
     }
   }
 
   return (
-    <section className="rounded-lg border bg-card p-4 shadow-2xl shadow-black/20 md:p-6">
-      <div className="grid gap-5 md:grid-cols-[180px_1fr]">
-        <div className="relative aspect-square overflow-hidden rounded-lg bg-secondary">
+    <section className="overflow-hidden rounded-2xl border border-white/10 bg-[#121212] p-4 text-white shadow-[0_24px_60px_rgba(0,0,0,0.55)] md:p-6">
+      <div className="grid gap-5 md:grid-cols-[220px_1fr]">
+        <div className="relative aspect-square overflow-hidden rounded-xl bg-zinc-800">
           {activeEpisode.coverUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={activeEpisode.coverUrl} alt="" loading="lazy" decoding="async" className="absolute inset-0 size-full object-cover" />
+            <img
+              src={activeEpisode.coverUrl}
+              alt=""
+              loading="lazy"
+              decoding="async"
+              className={`absolute inset-0 size-full object-cover transition-transform duration-500 ${isPlaying ? "animate-[spin_16s_linear_infinite]" : ""}`}
+            />
           ) : null}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/75 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
         </div>
         <div className="flex min-w-0 flex-col justify-center">
-          <p className="text-sm text-muted-foreground">{activeEpisode.seriesTitle}</p>
+          <p className="text-sm text-zinc-400">{activeEpisode.seriesTitle}</p>
           <p className="mt-1 text-2xl font-black md:text-4xl">{activeEpisode.title}</p>
           <div className="mt-6">
-            <div className="mb-2 flex justify-between text-xs text-muted-foreground">
+            <div className="mb-2 flex justify-between text-xs text-zinc-400">
               <span>{formatSeconds(progress.currentSeconds)}</span>
               <span>{formatSeconds(progress.durationSeconds)}</span>
             </div>
             <input
-              aria-label="Tien trinh nghe"
+              aria-label="Tiến trình nghe"
               type="range"
               min={0}
               max={progress.durationSeconds || 0}
               value={progress.currentSeconds}
               onChange={(event) => onSlider(event.target.value)}
-              className="w-full accent-amber-400"
+              className="h-1.5 w-full cursor-pointer accent-emerald-400"
             />
-            <p className="mt-2 text-center text-xs text-muted-foreground">
+            <div
+              className="relative h-7 cursor-pointer overflow-hidden rounded bg-zinc-900/80 p-2 transition-all duration-200 hover:bg-zinc-800/80"
+              onMouseMove={(event) => setWaveHoverSeconds(getWaveSeekFromPointer(event))}
+              onMouseLeave={() => setWaveHoverSeconds(null)}
+              onClick={(event) => requestSeek(getWaveSeekFromPointer(event))}
+            >
+              <div className="absolute inset-0 opacity-30 [background:repeating-linear-gradient(90deg,rgba(255,255,255,0.08)_0,rgba(255,255,255,0.08)_3px,transparent_3px,transparent_8px)]" />
+              <div
+                className="absolute inset-y-0 left-0 bg-gradient-to-r from-emerald-400 to-emerald-500 shadow-[0_0_10px_rgba(52,211,153,0.5)] transition-all duration-100"
+                style={{ width: `${progressPercent}%` }}
+              />
+              {waveHoverSeconds !== null && progress.durationSeconds > 0 ? (
+                <>
+                  <div className="absolute inset-y-0 w-px bg-emerald-300/90 shadow-[0_0_4px_rgba(52,211,153,0.5)]" style={{ left: `${(waveHoverSeconds / progress.durationSeconds) * 100}%` }} />
+                  <div className="absolute -top-7 rounded bg-zinc-800 px-2 py-1 text-[10px] text-zinc-100 shadow-md" style={{ left: `calc(${(waveHoverSeconds / progress.durationSeconds) * 100}% - 24px)` }}>
+                    {formatSeconds(waveHoverSeconds)}
+                  </div>
+                </>
+              ) : null}
+            </div>
+            <p className="mt-2 text-center text-xs text-zinc-400">
               {formatSeconds(progress.currentSeconds)} / {formatSeconds(progress.durationSeconds)}
             </p>
           </div>
-          <div className="mt-5 flex flex-wrap items-center gap-2">
-            <Button type="button" variant="secondary" size="icon" onClick={() => seek(-10)} aria-label="Lui 10 giay">
+          <div className="mt-5 flex flex-wrap items-center gap-2 md:gap-3">
+            <Button type="button" variant="secondary" size="icon" className="rounded-full border-zinc-700 bg-zinc-800/50 text-white transition-all duration-200 hover:bg-zinc-700 hover:text-white" onClick={() => seek(-10)} aria-label="Lùi 10 giây">
               <RotateCcw aria-hidden="true" />
             </Button>
-            <Button type="button" size="lg" onClick={togglePlay}>
-              {isPlaying ? <Pause data-icon="inline-start" /> : <Play data-icon="inline-start" />}
-              {isPlaying ? "Tam dung" : "Phat"}
+            <Button type="button" size="icon" className="h-12 w-12 rounded-full bg-white text-black shadow-lg transition-all duration-200 hover:scale-105 hover:bg-zinc-100 hover:shadow-xl" onClick={togglePlay} aria-label={isPlaying ? "Tạm dừng" : "Phát"}>
+              {isPlaying ? <Pause className="h-6 w-6" /> : <Play className="h-6 w-6 translate-x-[1px]" />}
             </Button>
-            <Button type="button" variant="secondary" size="icon" onClick={() => seek(10)} aria-label="Tien 10 giay">
+            <Button type="button" variant="secondary" size="icon" className="rounded-full border-zinc-700 bg-zinc-800/50 text-white transition-all duration-200 hover:bg-zinc-700 hover:text-white" onClick={() => seek(10)} aria-label="Tiến 10 giây">
               <RotateCw aria-hidden="true" />
             </Button>
             <select
-              aria-label="Toc do phat"
+              aria-label="Tốc độ phát"
               value={rate}
               onChange={(event) => setRate(Number(event.target.value))}
-              className="h-10 rounded-md border bg-input px-3 text-sm"
+              className="select select-bordered h-10 rounded-full border-zinc-700 bg-zinc-900 px-3 text-sm text-zinc-100"
             >
               {[0.75, 1, 1.25, 1.5, 2].map((speed) => (
                 <option key={speed} value={speed}>{speed}x</option>
               ))}
             </select>
-            <label className="flex items-center gap-2 text-sm text-muted-foreground">
+            <label className="flex items-center gap-2 text-sm text-zinc-300">
               <Volume2 aria-hidden="true" />
               <select
-                aria-label="Am luong"
+                aria-label="Âm lượng"
                 value={volume}
                 onChange={(event) => setVolume(Number(event.target.value))}
-                className="h-10 rounded-md border bg-input px-3 text-sm"
+                className="select select-bordered h-10 rounded-full border-zinc-700 bg-zinc-900 px-3 text-sm text-zinc-100"
               >
                 <option value={0.25}>25%</option>
                 <option value={0.5}>50%</option>
@@ -322,48 +394,48 @@ export function AudioPlayer({
           </div>
 
           {featureFlags.continuousPlay ? (
-            <div className="mt-4 flex flex-wrap items-center gap-3">
-              <label className="inline-flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="mt-4 flex flex-wrap items-center gap-3 rounded-xl border border-zinc-800 bg-zinc-900/70 p-3">
+              <label className="inline-flex items-center gap-2 text-sm text-zinc-300">
                 <input
                   aria-label="Auto-play"
                   type="checkbox"
                   checked={autoPlayNext}
                   onChange={(event) => setAutoPlayNext(event.target.checked)}
                 />
-                Auto-play tap tiep theo
+                Auto-play tập tiếp theo
               </label>
-              <Button type="button" variant="outline" size="sm" onClick={() => playNextInQueue()} disabled={!nextEpisode}>
+              <Button type="button" variant="outline" size="sm" className="border-zinc-700 bg-zinc-800 text-zinc-100 hover:bg-zinc-700" onClick={() => playNextInQueue()} disabled={!nextEpisode}>
                 Play next
               </Button>
-              {nextEpisode ? <p className="text-xs text-muted-foreground">Tiep theo: {nextEpisode.title}</p> : null}
+              {nextEpisode ? <p className="text-xs text-zinc-400">Tiếp theo: {nextEpisode.title}</p> : null}
             </div>
           ) : null}
 
           {featureFlags.sleepTimer ? (
-            <div className="mt-4 rounded-md border border-dashed p-3">
-              <p className="text-xs text-muted-foreground">{sleepTimerSummary()}</p>
+            <div className="mt-4 rounded-xl border border-zinc-800 bg-zinc-900/70 p-3">
+              <p className="text-xs text-zinc-400">{sleepTimerSummary()}</p>
               <div className="mt-2 flex flex-wrap gap-2">
                 {[10, 20, 30, 45].map((minutes) => (
-                  <Button key={minutes} type="button" variant="outline" size="sm" onClick={() => startSleepTimerMinutes(minutes)}>
-                    {minutes} phut
+                  <Button key={minutes} type="button" variant="outline" size="sm" className="border-zinc-700 bg-zinc-800 text-zinc-100 hover:bg-zinc-700" onClick={() => startSleepTimerMinutes(minutes)}>
+                    {minutes} phút
                   </Button>
                 ))}
-                <Button type="button" variant="outline" size="sm" onClick={startSleepTimerEndOfEpisode}>
-                  Den het tap
+                <Button type="button" variant="outline" size="sm" className="border-zinc-700 bg-zinc-800 text-zinc-100 hover:bg-zinc-700" onClick={startSleepTimerEndOfEpisode}>
+                  Đến hết tập
                 </Button>
-                <Button type="button" variant="ghost" size="sm" onClick={cancelSleepTimer}>
-                  Huy hen gio
+                <Button type="button" variant="ghost" size="sm" className="text-zinc-300 hover:bg-zinc-800" onClick={cancelSleepTimer}>
+                  Hủy hẹn giờ
                 </Button>
               </div>
             </div>
           ) : null}
 
           {featureFlags.bookmarks ? (
-            <div className="mt-4 rounded-md border border-dashed p-3">
+            <div className="mt-4 rounded-xl border border-zinc-800 bg-zinc-900/70 p-3">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <p className="text-sm font-semibold">Moc nghe va ghi chu</p>
-                  <p className="text-xs text-muted-foreground">Luu lai doan dang nghe de quay lai nhanh hon.</p>
+                  <p className="text-sm font-semibold">Mốc nghe và ghi chú</p>
+                  <p className="text-xs text-zinc-400">Lưu lại đoạn đang nghe để quay lại nhanh hơn.</p>
                 </div>
                 <Button
                   type="button"
@@ -372,25 +444,25 @@ export function AudioPlayer({
                   disabled={!canManageBookmarks || isSavingBookmark}
                 >
                   <BookmarkPlus aria-hidden="true" />
-                  Luu tai {formatSeconds(progress.currentSeconds)}
+                  Lưu tại {formatSeconds(progress.currentSeconds)}
                 </Button>
               </div>
 
               {canManageBookmarks ? (
                 <>
                   <label className="mt-3 block text-sm font-medium" htmlFor="bookmark-note">
-                    Ghi chu tuy chon
+                    Ghi chú tùy chọn
                   </label>
                   <Textarea
                     id="bookmark-note"
                     value={bookmarkNote}
                     onChange={(event) => setBookmarkNote(event.target.value)}
-                    placeholder="Vi du: bat dau twist, gioi thieu nhan vat, can nghe lai"
+                    placeholder="Ví dụ: bắt đầu twist, giới thiệu nhân vật, cần nghe lại"
                     maxLength={500}
                     className="mt-2 min-h-20"
                   />
 
-                  {isLoadingBookmarks ? <p className="mt-3 text-sm text-muted-foreground">Dang tai moc nghe...</p> : null}
+                  {isLoadingBookmarks ? <p className="mt-3 text-sm text-muted-foreground">Đang tải mốc nghe...</p> : null}
                   <BookmarkList
                     bookmarks={bookmarks}
                     currentSeconds={progress.currentSeconds}
@@ -402,10 +474,10 @@ export function AudioPlayer({
                   />
                 </>
               ) : (
-                <p className="mt-3 text-sm text-muted-foreground">Dang nhap de luu moc nghe va dong bo ghi chu giua cac lan nghe.</p>
+                <p className="mt-3 text-sm text-zinc-400">Đăng nhập để lưu mốc nghe và đồng bộ ghi chú giữa các lần nghe.</p>
               )}
 
-              <p aria-live="polite" className="mt-3 min-h-5 text-xs text-muted-foreground">
+              <p aria-live="polite" className="mt-3 min-h-5 text-xs text-zinc-400">
                 {bookmarkStatus}
               </p>
             </div>
