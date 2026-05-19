@@ -52,7 +52,7 @@
 </div>
 ```
 
-- [ ] **Step 3: Commit changes**
+- [x] **Step 3: Commit changes** _(consolidated in commit `d8b8963`)_
 
 ```bash
 git add components/player/audio-player.tsx
@@ -95,7 +95,7 @@ git commit -m "style(audio-player): update container styling for Spotify aesthet
 </div>
 ```
 
-- [ ] **Step 2: Commit changes**
+- [x] **Step 2: Commit changes** _(consolidated in commit `d8b8963`)_
 
 ```bash
 git add components/player/audio-player.tsx
@@ -145,7 +145,7 @@ git commit -m "feat(audio-player): enhance progress bar hover preview with smoot
   </Button>
 ```
 
-- [ ] **Step 2: Commit changes**
+- [x] **Step 2: Commit changes** _(consolidated in commit `d8b8963`)_
 
 ```bash
 git add components/player/audio-player.tsx
@@ -168,7 +168,7 @@ git commit -m "style(audio-player): update control buttons with Spotify-style ho
 <aside className="fixed inset-x-3 bottom-[4.7rem] z-40 overflow-hidden rounded-2xl border border-white/10 bg-[#121212]/95 p-3 text-white shadow-[0_20px_45px_rgba(0,0,0,0.5)] backdrop-blur-xl transition-all duration-300 md:inset-x-0 md:bottom-0 md:rounded-none md:border-x-0 md:border-b-0 md:px-6 md:py-3">
 ```
 
-- [ ] **Step 2: Commit changes**
+- [x] **Step 2: Commit changes** _(consolidated in commit `d8b8963`)_
 
 ```bash
 git add components/player/mini-player.tsx
@@ -208,7 +208,7 @@ git commit -m "style(mini-player): update container for polished Spotify-like ap
 </div>
 ```
 
-- [ ] **Step 2: Commit changes**
+- [x] **Step 2: Commit changes** _(consolidated in commit `d8b8963`)_
 
 ```bash
 git add components/player/mini-player.tsx
@@ -252,7 +252,7 @@ useEffect(() => {
 }, [togglePlay]);
 ```
 
-- [ ] **Step 2: Commit changes**
+- [x] **Step 2: Commit changes** _(consolidated in commit `d8b8963`)_
 
 ```bash
 git add components/player/audio-player.tsx
@@ -282,7 +282,7 @@ npm run lint
 
 Expected: No ESLint errors
 
-- [ ] **Step 3: Commit final changes**
+- [x] **Step 3: Commit final changes** _(consolidated in commit `d8b8963`)_
 
 ```bash
 git commit -m "chore: final polish and typecheck for Spotify-style player"
@@ -295,6 +295,6 @@ git commit -m "chore: final polish and typecheck for Spotify-style player"
 - [x] Visual design matches Spotify aesthetic (dark theme, rounded corners, shadows)
 - [x] Progress bar shows time preview on hover in both players
 - [x] Album art has vinyl-style rotation animation when playing
-- [ ] All existing features remain functional (bookmarks, sleep timer, auto-play)
-- [ ] Mobile and desktop experiences are polished
+- [x] All existing features remain functional (bookmarks, sleep timer, auto-play)
+- [x] Mobile and desktop experiences are polished
 - [x] Accessible with keyboard navigation
