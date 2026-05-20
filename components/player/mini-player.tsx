@@ -96,7 +96,7 @@ export function MiniPlayer() {
 
   return (
     <>
-      <aside className="fixed inset-x-3 bottom-[4.7rem] z-40 overflow-hidden rounded-2xl border border-border/20 bg-card/95 p-3 text-card-foreground shadow-[0_20px_45px_rgba(0,0,0,0.5)] backdrop-blur-xl transition-all duration-300 md:inset-x-0 md:bottom-0 md:rounded-none md:border-x-0 md:border-b-0 md:px-6 md:py-3">
+      <aside className="fixed inset-x-3 bottom-[4.7rem] z-40 overflow-hidden rounded-2xl border border-border/20 bg-card/95 p-3 text-card-foreground shadow-[0_20px_45px_rgba(0,0,0,0.5)] backdrop-blur-xl transition-all duration-300 md:inset-x-0 md:bottom-0 md:overflow-visible md:rounded-none md:border-x-0 md:border-b-0 md:px-6 md:py-3">
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-accent/10 via-transparent to-fuchsia-500/10" />
 
         <div className="hidden md:grid md:grid-cols-[1fr_auto_1fr] md:items-center md:gap-6">
