@@ -65,9 +65,6 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         <style
           dangerouslySetInnerHTML={{
             __html: `
-              @view-transition {
-                navigation: auto;
-              }
               @media (prefers-reduced-motion: reduce) {
                 ::view-transition-old(root),
                 ::view-transition-new(root) {
