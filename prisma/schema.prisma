@@ -18,21 +18,26 @@ enum SeriesStatus {
 }
 
 model User {
-  id            String           @id @default(cuid())
-  email         String           @unique
-  name          String?
-  passwordHash  String?
-  role          UserRole         @default(USER)
-  isVip         Boolean          @default(false)
-  follows       Follow[]
-  reviews       Review[]
-  progresses    ListenProgress[]
-  bookmarks     Bookmark[]
-  analytics     AnalyticsEvent[]
-  accounts      Account[]
-  sessions      Session[]
-  createdAt     DateTime         @default(now())
-  updatedAt     DateTime         @updatedAt
+  id                 String              @id @default(cuid())
+  email              String              @unique
+  name               String?
+  passwordHash       String?
+  role               UserRole            @default(USER)
+  isVip              Boolean             @default(false)
+  themePreference    String              @default("dark")
+  follows            Follow[]
+  reviews            Review[]
+  progresses         ListenProgress[]
+  bookmarks          Bookmark[]
+  analytics          AnalyticsEvent[]
+  adminAuditLogs     AdminAuditLog[]
+  accounts           Account[]
+  sessions           Session[]
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  communityPosts     CommunityPost[]
+  communityPostLikes CommunityPostLike[]
+  communityComments  CommunityComment[]
 }
 
 model Account {
@@ -158,14 +163,14 @@ model Review {
 }
 
 model ListenProgress {
-  id              String   @id @default(cuid())
-  userId          String
-  episodeId       String
-  currentSeconds  Int      @default(0)
-  completed       Boolean  @default(false)
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  episode         Episode  @relation(fields: [episodeId], references: [id], onDelete: Cascade)
-  updatedAt       DateTime @updatedAt
+  id             String   @id @default(cuid())
+  userId         String
+  episodeId      String
+  currentSeconds Int      @default(0)
+  completed      Boolean  @default(false)
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  episode        Episode  @relation(fields: [episodeId], references: [id], onDelete: Cascade)
+  updatedAt      DateTime @updatedAt
 
   @@unique([userId, episodeId])
 }
@@ -185,27 +190,27 @@ model Bookmark {
 }
 
 model AnalyticsEvent {
-  id                   String    @id @default(cuid())
-  userId               String?
-  seriesId             String?
-  episodeId            String?
-  nextEpisodeId        String?
-  eventName            String
-  source               String
-  sessionId            String?
-  currentSeconds       Int       @default(0)
-  durationSeconds      Int?
-  completed            Boolean?
-  completionPercent    Float?
+  id                    String   @id @default(cuid())
+  userId                String?
+  seriesId              String?
+  episodeId             String?
+  nextEpisodeId         String?
+  eventName             String
+  source                String
+  sessionId             String?
+  currentSeconds        Int      @default(0)
+  durationSeconds       Int?
+  completed             Boolean?
+  completionPercent     Float?
   listeningDeltaSeconds Int?
-  nextEpisodeNumber    Int?
-  autoPlayEnabled      Boolean?
-  occurredAt           DateTime
-  createdAt            DateTime  @default(now())
-  user                 User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
-  series               Series?   @relation(fields: [seriesId], references: [id], onDelete: SetNull)
-  episode              Episode?  @relation("AnalyticsEpisode", fields: [episodeId], references: [id], onDelete: SetNull)
-  nextEpisode          Episode?  @relation("AnalyticsNextEpisode", fields: [nextEpisodeId], references: [id], onDelete: SetNull)
+  nextEpisodeNumber     Int?
+  autoPlayEnabled       Boolean?
+  occurredAt            DateTime
+  createdAt             DateTime @default(now())
+  user                  User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  series                Series?  @relation(fields: [seriesId], references: [id], onDelete: SetNull)
+  episode               Episode? @relation("AnalyticsEpisode", fields: [episodeId], references: [id], onDelete: SetNull)
+  nextEpisode           Episode? @relation("AnalyticsNextEpisode", fields: [nextEpisodeId], references: [id], onDelete: SetNull)
 
   @@index([eventName, occurredAt])
   @@index([userId, occurredAt])
@@ -214,3 +219,59 @@ model AnalyticsEvent {
   @@index([sessionId])
 }
 
+model CommunityPost {
+  id                String              @id @default(cuid())
+  userId            String
+  topic             String              @default("Thảo luận")
+  title             String
+  content           String              @db.Text
+  isPinned          Boolean             @default(false)
+  likes             Int                 @default(0)
+  comments          Int                 @default(0)
+  user              User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  postLikes         CommunityPostLike[]
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  communityComments CommunityComment[]
+
+  @@index([createdAt(sort: Desc)])
+  @@index([topic, createdAt(sort: Desc)])
+}
+
+model CommunityPostLike {
+  id     String        @id @default(cuid())
+  postId String
+  userId String
+  post   CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user   User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+}
+
+model CommunityComment {
+  id        String        @id @default(cuid())
+  postId    String
+  userId    String
+  content   String        @db.Text
+  post      CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@index([postId, createdAt])
+}
+
+model AdminAuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  action     String
+  targetType String
+  targetId   String?
+  payload    Json?
+  createdAt  DateTime @default(now())
+  actor      User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([actorId, createdAt])
+  @@index([targetType, targetId, createdAt])
+  @@index([action, createdAt])
+}

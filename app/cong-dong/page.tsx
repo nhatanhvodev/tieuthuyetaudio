@@ -1,107 +1,107 @@
-import { Bug, Download, MessageCircle, Pin, Send, ThumbsUp } from "lucide-react";
-import { InstallAppButton } from "@/components/pwa/install-app-button";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
+"use client";
 
-const topics = ["Thao luan", "De xuat", "Hoi dap", "Bao loi"];
-const posts = [
-  {
-    title: "Ghim: gop y trai nghiem nghe tren mobile",
-    author: "Quan tri vien",
-    category: "De xuat",
-    pinned: true,
-    content: "Hay gui loi hien thi, yeu cau the loai moi hoac phan hoi ve player de nhom phat trien uu tien trong cac ban sau.",
-    likes: 38,
-    comments: 12
-  },
-  {
-    title: "Nen them bo loc truyen da hoan thanh",
-    author: "Minh Anh",
-    category: "Thao luan",
-    pinned: false,
-    content: "Khi nghe dai ngay minh thuong muon loc nhanh cac bo da hoan thanh de nghe lien tuc khong phai cho tap moi.",
-    likes: 21,
-    comments: 7
-  },
-  {
-    title: "Player hien thi gio phut giay rat de theo doi",
-    author: "Ban nghe dem",
-    category: "Hoi dap",
-    pinned: false,
-    content: "Dong thoi gian moi ro hon, nhat la cac tap dai. Mong co them nut hen gio tat trong phien ban sau.",
-    likes: 16,
-    comments: 5
-  }
-];
+import { useEffect, useState } from "react";
+import { Bug, Download } from "lucide-react";
+import { InstallAppButton } from "@/components/pwa/install-app-button";
+import { PostForm } from "@/components/community/post-form";
+import { PostCard } from "@/components/community/post-card";
+import { CommentSection } from "@/components/community/comment-section";
+
+type Post = {
+  id: string;
+  topic: string;
+  title: string;
+  content: string;
+  isPinned: boolean;
+  likes: number;
+  comments: number;
+  author: string;
+  authorVip: boolean;
+  isLiked: boolean;
+  createdAt: string;
+};
 
 export default function CommunityPage() {
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [openComments, setOpenComments] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    fetch("/api/community/posts")
+      .then((r) => r.json())
+      .then((d) => setPosts(d.posts))
+      .finally(() => setLoading(false));
+  }, []);
+
+  function handleCreated(post: Post) {
+    setPosts((prev) => [post, ...prev]);
+  }
+
+  function toggleComments(postId: string) {
+    setOpenComments((prev) => {
+      const next = new Set(prev);
+      if (next.has(postId)) next.delete(postId);
+      else next.add(postId);
+      return next;
+    });
+  }
+
   return (
     <section className="mx-auto max-w-7xl px-4 py-10">
       <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
         <div className="min-w-0">
-          <div className="rounded-lg border bg-card/90 p-5 md:p-7">
-            <p className="text-sm font-semibold text-accent">Cong dong</p>
-            <h1 className="mt-2 text-4xl font-black md:text-5xl">Gop y va thao luan</h1>
-            <p className="mt-3 max-w-2xl text-muted-foreground">Chia se cam nhan, bao loi giao dien, de xuat truyen moi hoac gop y cho trai nghiem nghe tren web va PWA.</p>
+          <div className="glass-panel rounded-lg p-5 md:p-7">
+            <p className="text-sm font-semibold text-accent">Cộng đồng</p>
+            <h1 className="mt-2 text-4xl font-black md:text-5xl">Góp ý và thảo luận</h1>
+            <p className="mt-3 max-w-2xl text-muted-foreground">Chia sẻ cảm nhận, báo lỗi giao diện, đề xuất truyện mới hoặc góp ý cho trải nghiệm nghe trên web và PWA.</p>
           </div>
 
-          <Card className="mt-6">
-            <CardHeader>
-              <CardTitle className="text-xl">Gui gop y</CardTitle>
-            </CardHeader>
-            <CardContent className="grid gap-3">
-              <div className="flex gap-2 overflow-x-auto pb-1">
-                {topics.map((topic) => (
-                  <button key={topic} type="button" className="inline-flex h-9 shrink-0 items-center rounded-md border bg-secondary px-3 text-sm font-semibold">
-                    {topic}
-                  </button>
-                ))}
-              </div>
-              <Textarea aria-label="Noi dung gop y" placeholder="Ban muon cai thien dieu gi?" className="min-h-28" />
-              <Button className="w-fit">
-                <Send data-icon="inline-start" />
-                Gui gop y
-              </Button>
-            </CardContent>
-          </Card>
+          <div className="mt-6">
+            <PostForm onCreated={handleCreated} />
+          </div>
 
           <div className="mt-6 grid gap-3">
-            {posts.map((post) => (
-              <article key={post.title} className="rounded-lg border bg-card/90 p-4">
-                <div className="flex flex-wrap items-center gap-2">
-                  {post.pinned ? <Pin aria-hidden="true" className="text-accent" /> : <MessageCircle aria-hidden="true" className="text-muted-foreground" />}
-                  <span className="rounded-md bg-secondary px-2 py-1 text-xs font-semibold">{post.category}</span>
-                  <span className="text-sm text-muted-foreground">boi {post.author}</span>
+            {loading ? (
+              Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="glass-panel animate-pulse rounded-lg p-4">
+                  <div className="mb-3 h-4 w-28 rounded bg-muted" />
+                  <div className="mb-2 h-6 w-3/4 rounded bg-muted" />
+                  <div className="mb-1 h-4 w-full rounded bg-muted" />
+                  <div className="h-4 w-2/3 rounded bg-muted" />
                 </div>
-                <h2 className="mt-3 text-xl font-black">{post.title}</h2>
-                <p className="mt-2 leading-6 text-muted-foreground">{post.content}</p>
-                <div className="mt-4 flex gap-4 text-sm text-muted-foreground">
-                  <span className="inline-flex items-center gap-1"><ThumbsUp aria-hidden="true" className="size-4" /> {post.likes}</span>
-                  <span className="inline-flex items-center gap-1"><MessageCircle aria-hidden="true" className="size-4" /> {post.comments}</span>
+              ))
+            ) : posts.length > 0 ? (
+              posts.map((post) => (
+                <div key={post.id}>
+                  <PostCard post={post} onToggleComments={toggleComments} />
+                  {openComments.has(post.id) ? <CommentSection postId={post.id} /> : null}
                 </div>
-              </article>
-            ))}
+              ))
+            ) : (
+              <div className="glass-panel rounded-lg p-8 text-center">
+                <p className="text-muted-foreground">Chưa có bài viết nào. Hãy là người đầu tiên gửi góp ý!</p>
+              </div>
+            )}
           </div>
         </div>
 
         <aside className="grid h-fit gap-4">
-          <div className="rounded-lg border bg-card/90 p-5">
+          <div className="glass-panel rounded-lg p-5">
             <div className="flex items-center gap-2 text-accent">
               <Download aria-hidden="true" />
-              <h2 className="text-xl font-black">Cai ung dung</h2>
+              <h2 className="text-xl font-black">Cài ứng dụng</h2>
             </div>
-            <p className="mt-3 text-sm leading-6 text-muted-foreground">Nguoi dung mobile co the cai website nhu app de mo nhanh va nghe truyen toan man hinh.</p>
+            <p className="mt-3 text-sm leading-6 text-muted-foreground">Người dùng mobile có thể cài website như app để mở nhanh và nghe truyện toàn màn hình.</p>
             <div className="mt-4">
               <InstallAppButton />
             </div>
           </div>
-          <div className="rounded-lg border bg-card/90 p-5">
+          <div className="glass-panel rounded-lg p-5">
             <div className="flex items-center gap-2 text-accent">
               <Bug aria-hidden="true" />
-              <h2 className="text-xl font-black">Bao loi nhanh</h2>
+              <h2 className="text-xl font-black">Báo lỗi nhanh</h2>
             </div>
-            <p className="mt-3 text-sm leading-6 text-muted-foreground">Neu thay text tran, nut kho bam hoac player che noi dung, hay gui gop y kem ten trang.</p>
+            <p className="mt-3 text-sm leading-6 text-muted-foreground">Nếu thấy text tràn, nút khó bấm hoặc player che nội dung, hãy gửi góp ý kèm tên trang.</p>
           </div>
         </aside>
       </div>
