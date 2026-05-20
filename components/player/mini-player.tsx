@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { featureFlags } from "@/lib/features";
-import { formatSeconds } from "@/lib/format";
+import { formatSeconds, formatTimeSmart } from "@/lib/format";
 import { usePlayerStore } from "@/stores/player-store";
 
 export function MiniPlayer() {
@@ -77,7 +77,12 @@ export function MiniPlayer() {
   const prevEpisode = currentQueueIndex > 0 ? queue[currentQueueIndex - 1] ?? null : null;
   const showNextUp = featureFlags.continuousPlay && autoPlayNext && Boolean(nextEpisode) && percent >= 85;
   const waveformPercent = `${Math.max(0, Math.min(100, percent))}%`;
-  const progressText = `${Math.round(percent)}% đã nghe`;
+  const currentTimeLabel = formatTimeSmart(progress.currentSeconds, progress.durationSeconds);
+  const durationLabel = formatTimeSmart(progress.durationSeconds, progress.durationSeconds);
+
+  function seek(delta: number) {
+    requestSeek(progress.currentSeconds + delta);
+  }
 
   const hoverPercent =
     hoverSeconds === null || !progress.durationSeconds ? null : Math.max(0, Math.min(100, (hoverSeconds / progress.durationSeconds) * 100));
@@ -116,7 +121,13 @@ export function MiniPlayer() {
           </div>
 
           <div className="flex min-w-[380px] flex-col items-center">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
+              <Button type="button" variant="secondary" size="icon" className="h-8 w-8 rounded-full border-border bg-secondary text-muted-foreground hover:bg-muted" onClick={() => seek(-30)} aria-label="Lùi 30 giây">
+                <span className="text-[10px] font-semibold tabular-nums">-30</span>
+              </Button>
+              <Button type="button" variant="secondary" size="icon" className="h-8 w-8 rounded-full border-border bg-secondary text-muted-foreground hover:bg-muted" onClick={() => seek(-10)} aria-label="Lùi 10 giây">
+                <span className="text-[10px] font-semibold tabular-nums">-10</span>
+              </Button>
               <Button type="button" variant="secondary" size="icon" className="h-9 w-9 rounded-full border-border bg-secondary text-card-foreground hover:bg-muted" onClick={() => playPrevInQueue()} disabled={!prevEpisode} aria-label="Tập trước">
                 <SkipBack aria-hidden="true" />
               </Button>
@@ -125,6 +136,12 @@ export function MiniPlayer() {
               </Button>
               <Button type="button" variant="secondary" size="icon" className="h-9 w-9 rounded-full border-border bg-secondary text-card-foreground hover:bg-muted" onClick={() => playNextInQueue()} disabled={!nextEpisode} aria-label="Tập tiếp theo">
                 <SkipForward aria-hidden="true" />
+              </Button>
+              <Button type="button" variant="secondary" size="icon" className="h-8 w-8 rounded-full border-border bg-secondary text-muted-foreground hover:bg-muted" onClick={() => seek(10)} aria-label="Tua 10 giây">
+                <span className="text-[10px] font-semibold tabular-nums">+10</span>
+              </Button>
+              <Button type="button" variant="secondary" size="icon" className="h-8 w-8 rounded-full border-border bg-secondary text-muted-foreground hover:bg-muted" onClick={() => seek(30)} aria-label="Tua 30 giây">
+                <span className="text-[10px] font-semibold tabular-nums">+30</span>
               </Button>
             </div>
             <div className="mt-2 w-full">
@@ -149,7 +166,7 @@ export function MiniPlayer() {
           </div>
 
           <div className="ml-auto flex items-center justify-end gap-3">
-            <span className="text-[11px] text-muted-foreground">{progressText}</span>
+            <span className="text-xs tabular-nums text-muted-foreground">{currentTimeLabel} / {durationLabel}</span>
             <label className="flex items-center gap-2 text-muted-foreground">
               <Volume2 className="size-4" aria-hidden="true" />
               <input
@@ -201,25 +218,34 @@ export function MiniPlayer() {
               ) : null}
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="relative size-12 shrink-0 overflow-hidden rounded-lg bg-secondary">
+          <div className="mb-2 text-center">
+            <span className="text-xs tabular-nums text-muted-foreground">{currentTimeLabel} / {durationLabel}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="relative size-10 shrink-0 overflow-hidden rounded-lg bg-secondary">
               {current.coverUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={current.coverUrl} alt="" loading="lazy" decoding="async" className={`absolute inset-0 size-full object-cover ${isPlaying ? "animate-[spin_12s_linear_infinite]" : ""}`} />
               ) : null}
             </div>
             <Link href={`/truyen/${current.seriesSlug}/tap/${current.episodeNumber}`} className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold text-card-foreground">{current.title}</p>
-              <p className="truncate text-xs text-muted-foreground">{current.seriesTitle}</p>
+              <p className="truncate text-xs font-semibold text-card-foreground">{current.title}</p>
+              <p className="truncate text-[10px] text-muted-foreground">{current.seriesTitle}</p>
             </Link>
-            <Button type="button" variant="secondary" size="icon" className="h-9 w-9 rounded-full border-border bg-secondary text-card-foreground hover:bg-muted" onClick={() => playPrevInQueue()} disabled={!prevEpisode} aria-label="Tập trước">
-              <SkipBack aria-hidden="true" className="size-4" />
+            <Button type="button" variant="secondary" size="icon" className="h-8 w-8 rounded-full border-border bg-secondary text-card-foreground hover:bg-muted" onClick={() => playPrevInQueue()} disabled={!prevEpisode} aria-label="Tập trước">
+              <SkipBack aria-hidden="true" className="size-3.5" />
+            </Button>
+            <Button type="button" variant="secondary" size="icon" className="h-7 w-7 rounded-full border-border bg-secondary text-[10px] font-semibold text-muted-foreground hover:bg-muted" onClick={() => seek(-10)} aria-label="Lùi 10 giây">
+              -10
             </Button>
             <Button type="button" size="icon" className="h-10 w-10 rounded-full bg-primary text-primary-foreground hover:brightness-90" onClick={togglePlay} aria-label={isPlaying ? "Tạm dừng" : "Phát"}>
-              {isPlaying ? <Pause aria-hidden="true" /> : <Play aria-hidden="true" />}
+              {isPlaying ? <Pause aria-hidden="true" className="size-5" /> : <Play aria-hidden="true" className="size-5" />}
             </Button>
-            <Button type="button" variant="secondary" size="icon" className="h-9 w-9 rounded-full border-border bg-secondary text-card-foreground hover:bg-muted" onClick={() => playNextInQueue()} disabled={!nextEpisode} aria-label="Tập tiếp theo">
-              <SkipForward aria-hidden="true" className="size-4" />
+            <Button type="button" variant="secondary" size="icon" className="h-7 w-7 rounded-full border-border bg-secondary text-[10px] font-semibold text-muted-foreground hover:bg-muted" onClick={() => seek(10)} aria-label="Tua 10 giây">
+              +10
+            </Button>
+            <Button type="button" variant="secondary" size="icon" className="h-8 w-8 rounded-full border-border bg-secondary text-card-foreground hover:bg-muted" onClick={() => playNextInQueue()} disabled={!nextEpisode} aria-label="Tập tiếp theo">
+              <SkipForward aria-hidden="true" className="size-3.5" />
             </Button>
           </div>
         </div>
