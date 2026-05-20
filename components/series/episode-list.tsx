@@ -3,6 +3,7 @@ import { Headphones, Play } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CoverImage } from "@/components/common/cover-image";
+import { Skeleton } from "@/components/ui/skeleton";
 import { formatCount, formatDuration } from "@/lib/format";
 
 type Episode = {
@@ -19,13 +20,32 @@ export function EpisodeList({
   slug,
   episodes,
   coverUrl,
-  currentEpisodeNumber
+  currentEpisodeNumber,
+  loading
 }: {
   slug: string;
   episodes: Episode[];
   coverUrl?: string | null;
   currentEpisodeNumber?: number;
+  loading?: boolean;
 }) {
+  if (loading) {
+    return (
+      <div className="grid gap-2">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div key={i} className="flex items-center gap-3 rounded-lg border bg-card/90 p-2.5">
+            <Skeleton className="size-14 shrink-0 rounded-md" />
+            <div className="min-w-0 flex-1 space-y-1.5">
+              <Skeleton className="h-4 w-2/3 rounded" />
+              <Skeleton className="h-3 w-1/3 rounded" />
+            </div>
+            <Skeleton className="size-9 rounded-full" />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div className="grid gap-2">
       {episodes.map((episode) => {

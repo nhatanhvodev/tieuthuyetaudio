@@ -91,12 +91,12 @@ export function MiniPlayer() {
 
   return (
     <>
-      <aside className="fixed inset-x-3 bottom-[4.7rem] z-40 overflow-hidden rounded-2xl border border-white/10 bg-[#121212]/95 p-3 text-white shadow-[0_20px_45px_rgba(0,0,0,0.5)] backdrop-blur-xl transition-all duration-300 md:inset-x-0 md:bottom-0 md:rounded-none md:border-x-0 md:border-b-0 md:px-6 md:py-3">
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-emerald-500/10 via-transparent to-fuchsia-500/10" />
+      <aside className="fixed inset-x-3 bottom-[4.7rem] z-40 overflow-hidden rounded-2xl border border-border/20 bg-card/95 p-3 text-card-foreground shadow-[0_20px_45px_rgba(0,0,0,0.5)] backdrop-blur-xl transition-all duration-300 md:inset-x-0 md:bottom-0 md:rounded-none md:border-x-0 md:border-b-0 md:px-6 md:py-3">
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-accent/10 via-transparent to-fuchsia-500/10" />
 
         <div className="hidden md:grid md:grid-cols-[1fr_auto_1fr] md:items-center md:gap-6">
           <div className="flex min-w-0 items-center gap-3">
-            <div className="relative size-14 shrink-0 overflow-hidden rounded-lg bg-zinc-800">
+            <div className="relative size-14 shrink-0 overflow-hidden rounded-lg bg-secondary">
               {current.coverUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -109,37 +109,37 @@ export function MiniPlayer() {
               ) : null}
             </div>
             <Link href={`/truyen/${current.seriesSlug}/tap/${current.episodeNumber}`} className="min-w-0">
-              <p className="truncate text-sm font-semibold text-white">{current.title}</p>
-              <p className="truncate text-xs text-zinc-300">{current.seriesTitle}</p>
-              {showNextUp && nextEpisode ? <p className="mt-1 truncate text-[11px] text-emerald-400">Sắp phát tiếp: {nextEpisode.title}</p> : null}
+              <p className="truncate text-sm font-semibold text-card-foreground">{current.title}</p>
+              <p className="truncate text-xs text-muted-foreground">{current.seriesTitle}</p>
+              {showNextUp && nextEpisode ? <p className="mt-1 truncate text-[11px] text-accent">Sắp phát tiếp: {nextEpisode.title}</p> : null}
             </Link>
           </div>
 
           <div className="flex min-w-[380px] flex-col items-center">
             <div className="flex items-center gap-2">
-              <Button type="button" variant="secondary" size="icon" className="h-9 w-9 rounded-full border-zinc-700 bg-zinc-800 text-white hover:bg-zinc-700" onClick={() => playPrevInQueue()} disabled={!prevEpisode} aria-label="Tập trước">
+              <Button type="button" variant="secondary" size="icon" className="h-9 w-9 rounded-full border-border bg-secondary text-card-foreground hover:bg-muted" onClick={() => playPrevInQueue()} disabled={!prevEpisode} aria-label="Tập trước">
                 <SkipBack aria-hidden="true" />
               </Button>
-              <Button type="button" variant="secondary" size="icon" className="h-9 w-9 rounded-full border-zinc-700 bg-zinc-800 text-white hover:bg-zinc-700" onClick={togglePlay} aria-label={isPlaying ? "Tạm dừng" : "Phát"}>
+              <Button type="button" variant="secondary" size="icon" className="h-9 w-9 rounded-full border-border bg-secondary text-card-foreground hover:bg-muted" onClick={togglePlay} aria-label={isPlaying ? "Tạm dừng" : "Phát"}>
                 {isPlaying ? <Pause aria-hidden="true" /> : <Play aria-hidden="true" className="translate-x-[1px]" />}
               </Button>
-              <Button type="button" variant="secondary" size="icon" className="h-9 w-9 rounded-full border-zinc-700 bg-zinc-800 text-white hover:bg-zinc-700" onClick={() => playNextInQueue()} disabled={!nextEpisode} aria-label="Tập tiếp theo">
+              <Button type="button" variant="secondary" size="icon" className="h-9 w-9 rounded-full border-border bg-secondary text-card-foreground hover:bg-muted" onClick={() => playNextInQueue()} disabled={!nextEpisode} aria-label="Tập tiếp theo">
                 <SkipForward aria-hidden="true" />
               </Button>
             </div>
             <div className="mt-2 w-full">
               <div
-                className="relative h-7 cursor-pointer overflow-hidden rounded-md bg-zinc-900/80 px-1 transition-all duration-200 hover:bg-zinc-800/80"
+                className="relative h-7 cursor-pointer overflow-hidden rounded-md bg-muted/80 px-1 transition-all duration-200 hover:bg-secondary/80"
                 onMouseMove={(event) => setHoverSeconds(getSeekFromPointer(event))}
                 onMouseLeave={() => setHoverSeconds(null)}
                 onClick={(event) => requestSeek(getSeekFromPointer(event))}
               >
                 <div className="absolute inset-y-1 left-1 right-1 rounded opacity-30 [background:repeating-linear-gradient(90deg,rgba(255,255,255,0.08)_0,rgba(255,255,255,0.08)_2px,transparent_2px,transparent_6px)]" />
-                <div className="absolute inset-y-1 left-1 rounded bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.4)] transition-all duration-100" style={{ width: `calc(${waveformPercent} - 2px)` }} />
+                <div className="absolute inset-y-1 left-1 rounded bg-accent shadow-[0_0_8px_var(--color-accent)] transition-all duration-100" style={{ width: `calc(${waveformPercent} - 2px)` }} />
                 {hoverPercent !== null ? (
                   <>
-                    <div className="absolute inset-y-0 w-px bg-emerald-300/90 shadow-[0_0_4px_rgba(52,211,153,0.5)]" style={{ left: `calc(${hoverPercent}% - 1px)` }} />
-                    <div className="absolute -top-7 rounded bg-zinc-800 px-1.5 py-0.5 text-[10px] text-zinc-100 shadow-md" style={{ left: `calc(${hoverPercent}% - 22px)` }}>
+                    <div className="absolute inset-y-0 w-px bg-accent/90 shadow-[0_0_4px_var(--color-accent)]" style={{ left: `calc(${hoverPercent}% - 1px)` }} />
+                    <div className="absolute -top-7 rounded bg-secondary px-1.5 py-0.5 text-[10px] text-foreground shadow-md" style={{ left: `calc(${hoverPercent}% - 22px)` }}>
                       {formatSeconds(hoverSeconds ?? 0)}
                     </div>
                   </>
@@ -149,8 +149,8 @@ export function MiniPlayer() {
           </div>
 
           <div className="ml-auto flex items-center justify-end gap-3">
-            <span className="text-[11px] text-zinc-300">{progressText}</span>
-            <label className="flex items-center gap-2 text-zinc-300">
+            <span className="text-[11px] text-muted-foreground">{progressText}</span>
+            <label className="flex items-center gap-2 text-muted-foreground">
               <Volume2 className="size-4" aria-hidden="true" />
               <input
                 aria-label="Âm lượng mini player"
@@ -160,46 +160,83 @@ export function MiniPlayer() {
                 step={0.05}
                 value={volume}
                 onChange={(event) => setVolume(Number(event.target.value))}
-                className="h-1.5 w-24 cursor-pointer accent-emerald-400"
+                className="h-1.5 w-24 cursor-pointer accent-current"
               />
             </label>
-            <Button type="button" variant="ghost" size="sm" className="text-zinc-300 hover:bg-zinc-800" onClick={() => setNotesOpen((v) => !v)}>
+            <Button type="button" variant="ghost" size="sm" className="text-muted-foreground hover:bg-secondary" onClick={() => setNotesOpen((v) => !v)}>
               Notes {notesOpen ? <ChevronDown className="size-4" /> : <ChevronUp className="size-4" />}
             </Button>
           </div>
         </div>
 
         <div className="md:hidden">
+          <div className="mb-2">
+            <div
+              className="relative h-10 cursor-pointer overflow-hidden rounded-md bg-muted/80 px-1 transition-all duration-200 hover:bg-secondary/80"
+              onTouchMove={(event) => {
+                const touch = event.touches[0];
+                const rect = (event.target as HTMLElement).closest("[data-seek-bar]")?.getBoundingClientRect();
+                if (!rect || !progress.durationSeconds) return;
+                const ratio = Math.max(0, Math.min(1, (touch.clientX - rect.left) / rect.width));
+                setHoverSeconds(Math.floor(ratio * progress.durationSeconds));
+              }}
+              onTouchEnd={() => {
+                if (hoverSeconds !== null) requestSeek(hoverSeconds);
+                setHoverSeconds(null);
+              }}
+              onMouseMove={(event) => setHoverSeconds(getSeekFromPointer(event))}
+              onMouseLeave={() => setHoverSeconds(null)}
+              onClick={(event) => requestSeek(getSeekFromPointer(event))}
+              data-seek-bar
+            >
+              <div
+                className="absolute inset-y-1 left-1 rounded bg-accent shadow-[0_0_8px_var(--color-accent)] transition-all duration-100"
+                style={{ width: `calc(${waveformPercent} - 2px)` }}
+              />
+              {hoverPercent !== null ? (
+                <div
+                  className="absolute inset-y-0 w-px bg-accent/90"
+                  style={{ left: `calc(${hoverPercent}% - 1px)` }}
+                />
+              ) : null}
+            </div>
+          </div>
           <div className="flex items-center gap-3">
-            <div className="relative size-12 shrink-0 overflow-hidden rounded-lg bg-zinc-800">
+            <div className="relative size-12 shrink-0 overflow-hidden rounded-lg bg-secondary">
               {current.coverUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={current.coverUrl} alt="" loading="lazy" decoding="async" className={`absolute inset-0 size-full object-cover ${isPlaying ? "animate-[spin_12s_linear_infinite]" : ""}`} />
               ) : null}
             </div>
             <Link href={`/truyen/${current.seriesSlug}/tap/${current.episodeNumber}`} className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold text-white">{current.title}</p>
-              <p className="truncate text-xs text-zinc-300">{current.seriesTitle}</p>
+              <p className="truncate text-sm font-semibold text-card-foreground">{current.title}</p>
+              <p className="truncate text-xs text-muted-foreground">{current.seriesTitle}</p>
             </Link>
-            <Button type="button" size="icon" className="h-10 w-10 rounded-full bg-white text-black hover:bg-zinc-200" onClick={togglePlay} aria-label={isPlaying ? "Tạm dừng" : "Phát"}>
+            <Button type="button" variant="secondary" size="icon" className="h-9 w-9 rounded-full border-border bg-secondary text-card-foreground hover:bg-muted" onClick={() => playPrevInQueue()} disabled={!prevEpisode} aria-label="Tập trước">
+              <SkipBack aria-hidden="true" className="size-4" />
+            </Button>
+            <Button type="button" size="icon" className="h-10 w-10 rounded-full bg-primary text-primary-foreground hover:brightness-90" onClick={togglePlay} aria-label={isPlaying ? "Tạm dừng" : "Phát"}>
               {isPlaying ? <Pause aria-hidden="true" /> : <Play aria-hidden="true" />}
+            </Button>
+            <Button type="button" variant="secondary" size="icon" className="h-9 w-9 rounded-full border-border bg-secondary text-card-foreground hover:bg-muted" onClick={() => playNextInQueue()} disabled={!nextEpisode} aria-label="Tập tiếp theo">
+              <SkipForward aria-hidden="true" className="size-4" />
             </Button>
           </div>
         </div>
       </aside>
 
-      <section className={`fixed inset-x-0 bottom-[72px] z-30 hidden border-t border-white/10 bg-[#0f0f0f]/98 px-6 pb-5 pt-4 text-white backdrop-blur-xl transition-all duration-300 md:block ${notesOpen ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-8 opacity-0"}`}>
+      <section className={`fixed inset-x-0 bottom-[72px] z-30 hidden border-t border-border/20 bg-card/98 px-6 pb-5 pt-4 text-card-foreground backdrop-blur-xl transition-all duration-300 md:block ${notesOpen ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-8 opacity-0"}`}>
         <div className="mx-auto grid max-w-6xl gap-4 md:grid-cols-[1fr_1fr]">
           <div>
             <p className="text-sm font-semibold">Lyrics preview</p>
-            <div className="mt-2 rounded-lg border border-zinc-800 bg-zinc-900/70 p-3 text-sm text-zinc-300">
+            <div className="mt-2 rounded-lg border border-border bg-muted/70 p-3 text-sm text-muted-foreground">
               <p>{formatSeconds(progress.currentSeconds)} — [Chưa có lyrics đồng bộ cho tập này]</p>
-              <p className="mt-1 text-zinc-500">Bạn có thể thay bằng lyric thật từ backend sau.</p>
+              <p className="mt-1 text-muted-foreground">Bạn có thể thay bằng lyric thật từ backend sau.</p>
             </div>
           </div>
           <div>
             <p className="text-sm font-semibold">Quick notes</p>
-            <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Ghi chú nhanh khi đang nghe..." className="mt-2 min-h-24 border-zinc-800 bg-zinc-900 text-zinc-100" />
+            <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Ghi chú nhanh khi đang nghe..." className="mt-2 min-h-24 border-border bg-muted text-foreground" />
           </div>
         </div>
       </section>

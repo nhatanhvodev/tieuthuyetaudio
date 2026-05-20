@@ -3,6 +3,7 @@ import { Clock3, Headphones, Play } from "lucide-react";
 import { CoverImage } from "@/components/common/cover-image";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { formatCount, formatDuration } from "@/lib/format";
 
 type LatestEpisode = {
@@ -19,7 +20,25 @@ type LatestEpisode = {
   };
 };
 
-export function LatestEpisodeList({ episodes }: { episodes: LatestEpisode[] }) {
+export function LatestEpisodeList({ episodes, loading }: { episodes: LatestEpisode[]; loading?: boolean }) {
+  if (loading) {
+    return (
+      <div className="grid gap-2">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="flex items-center gap-3 rounded-lg border bg-card/90 p-2.5">
+            <Skeleton className="size-16 shrink-0 rounded-md" />
+            <div className="min-w-0 flex-1 space-y-1.5">
+              <Skeleton className="h-4 w-20 rounded-full" />
+              <Skeleton className="h-4 w-3/4 rounded" />
+              <Skeleton className="h-3 w-1/2 rounded" />
+            </div>
+            <Skeleton className="size-9 rounded-full" />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   if (!episodes.length) return null;
 
   return (
