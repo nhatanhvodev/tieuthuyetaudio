@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#08111f",
+  themeColor: "#fff9ec",
   width: "device-width",
   initialScale: 1
 };
@@ -44,20 +44,26 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   return (
     <html lang="vi" suppressHydrationWarning>
       <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700&family=Manrope:wght@600&display=swap"
+          rel="stylesheet"
+        />
         <script
           dangerouslySetInnerHTML={{
             __html: `(() => {
   try {
     const serverTheme = ${JSON.stringify(serverTheme)};
     const savedTheme = window.localStorage.getItem("theme");
-    const candidate = savedTheme ?? serverTheme ?? "dark";
-    const theme = typeof candidate === "string" ? candidate : "dark";
-    const lightThemes = { light: true, cupcake: true, winter: true, lofi: true };
+    const candidate = savedTheme ?? serverTheme ?? "thu-am-sac";
+    const theme = typeof candidate === "string" ? candidate : "thu-am-sac";
+    const lightThemes = { "thu-am-sac": true, light: true, cupcake: true, winter: true, lofi: true };
     document.documentElement.setAttribute("data-theme", theme);
     document.documentElement.style.colorScheme = lightThemes[theme] ? "light" : "dark";
   } catch {
-    document.documentElement.setAttribute("data-theme", "dark");
-    document.documentElement.style.colorScheme = "dark";
+    document.documentElement.setAttribute("data-theme", "thu-am-sac");
+    document.documentElement.style.colorScheme = "light";
   }
 })();`
           }}
