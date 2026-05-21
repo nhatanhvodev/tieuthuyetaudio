@@ -1,154 +1,129 @@
 import Link from "next/link";
-import { BookOpen, Crown, Flame, Headphones, Sparkles } from "lucide-react";
-import { CoverImage } from "@/components/common/cover-image";
+import { BookOpen, Crown, Headphones } from "lucide-react";
 import { InstallAppButton } from "@/components/pwa/install-app-button";
 import { SearchBox } from "@/components/search/search-box";
 import { ContinueListeningShelf } from "@/components/series/continue-listening-shelf";
 import { LatestEpisodeList } from "@/components/series/latest-episode-list";
 import { StoryShelf } from "@/components/series/story-shelf";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { auth } from "@/lib/auth";
-import { formatCount } from "@/lib/format";
+import { safeAuth } from "@/lib/auth";
 import { getContinueListeningByUser, getHomeShelves } from "@/lib/series/queries";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const session = await auth();
-  const [shelves, continueListening] = await Promise.all([
-    getHomeShelves(session?.user?.id),
-    session?.user ? getContinueListeningByUser(session.user.id, 6) : Promise.resolve([])
-  ]);
-  const featured = shelves.popular[0] ?? shelves.latest[0];
+  const session = await safeAuth();
+  const shelves = await getHomeShelves(session?.user?.id);
+
+  let continueListening: Awaited<ReturnType<typeof getContinueListeningByUser>> = [];
+  if (session?.user) {
+    try {
+      continueListening = await getContinueListeningByUser(session.user.id, 6);
+    } catch (error) {
+      console.error("[HomePage] Fallback continue listening due to data source error", error);
+    }
+  }
 
   return (
     <>
-      <section className="relative overflow-hidden border-b">
-        <div className="absolute inset-0">
-          <CoverImage
-            src={featured?.coverUrl}
-            alt={featured?.title ?? "Tieu thuyet Audio"}
-            priority
-            sizes="100vw"
-            className="absolute inset-0 size-full object-cover opacity-35"
-          />
+      {/* Hero — centered, no background image */}
+      <section className="mx-auto max-w-3xl px-4 py-16 text-center md:py-24">
+        <h1 className="text-4xl font-black leading-tight md:text-5xl lg:text-6xl" style={{ fontFamily: "var(--font-display)" }}>
+          Tiểu thuyết Audio
+        </h1>
+        <p className="mt-4 max-w-xl mx-auto text-base leading-7 text-muted-foreground md:text-lg">
+          Website nghe truyện audio tối ưu cho mobile, có player toàn cục, lưu tiến trình nghe và tùy chọn cài như app trên điện thoại.
+        </p>
+        <div className="mt-8 max-w-lg mx-auto">
+          <SearchBox />
         </div>
-        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/92 to-background/45" />
-        <div className="relative mx-auto grid max-w-7xl gap-8 px-4 py-10 md:grid-cols-[1.05fr_0.95fr] md:py-16">
-          <div className="flex flex-col justify-center">
-            <Badge variant="accent" className="w-fit">Nghe truyen moi luc</Badge>
-            <h1 className="mt-4 max-w-3xl text-4xl font-black leading-tight md:text-6xl">Tieu thuyet Audio</h1>
-            <p className="mt-5 max-w-2xl text-base leading-7 text-muted-foreground md:text-lg">
-              Website nghe truyen audio toi uu cho mobile, co player toan cuc, luu tien trinh nghe va tuy chon cai nhu app tren dien thoai.
-            </p>
-            <div className="mt-6 max-w-xl">
-              <SearchBox />
-            </div>
-            <div className="mt-7 flex flex-wrap gap-3">
-              <Button asChild size="lg">
-                <Link href="/truyen">
-                  <BookOpen data-icon="inline-start" />
-                  Kham pha ngay
-                </Link>
-              </Button>
-              <InstallAppButton />
-              <Button asChild variant="secondary" size="lg">
-                <Link href="/vip">
-                  <Crown data-icon="inline-start" />
-                  Dang ky VIP
-                </Link>
-              </Button>
-            </div>
-          </div>
-
-          {featured ? (
-            <div className="grid gap-4 md:grid-cols-[0.8fr_1fr] md:items-end">
-              <Link href={`/truyen/${featured.slug}`} className="relative aspect-[3/4] overflow-hidden rounded-lg border shadow-2xl shadow-black/40">
-                <CoverImage
-                  src={featured.coverUrl}
-                  alt={featured.title}
-                  priority
-                  sizes="(max-width: 768px) 90vw, 28vw"
-                  className="absolute inset-0 size-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/25 to-transparent" />
-                <div className="absolute inset-x-0 bottom-0 p-4">
-                  <Badge variant="accent">Xu huong</Badge>
-                  <h2 className="mt-2 line-clamp-2 text-2xl font-black text-white">{featured.title}</h2>
-                </div>
-              </Link>
-              <div className="rounded-lg border bg-card/90 p-4">
-                <div className="flex items-center gap-2 text-accent">
-                  <Flame aria-hidden="true" />
-                  <span className="text-sm font-semibold">Dang duoc nghe nhieu</span>
-                </div>
-                <p className="mt-3 line-clamp-4 text-sm leading-6 text-muted-foreground">{featured.description}</p>
-                <div className="mt-4 grid grid-cols-3 gap-2 text-center">
-                  <div className="rounded-md bg-secondary p-3">
-                    <p className="text-lg font-black">{formatCount(featured.listenCount)}</p>
-                    <p className="text-xs text-muted-foreground">luot nghe</p>
-                  </div>
-                  <div className="rounded-md bg-secondary p-3">
-                    <p className="text-lg font-black">{featured.episodeCount}</p>
-                    <p className="text-xs text-muted-foreground">tap</p>
-                  </div>
-                  <div className="rounded-md bg-secondary p-3">
-                    <p className="text-lg font-black">{featured.averageRating.toFixed(1)}</p>
-                    <p className="text-xs text-muted-foreground">diem</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : null}
+        <div className="mt-6 flex flex-wrap justify-center gap-3">
+          <Button asChild size="lg">
+            <Link href="/truyen">
+              <BookOpen data-icon="inline-start" />
+              Khám phá ngay
+            </Link>
+          </Button>
+          <Button asChild variant="secondary" size="lg">
+            <Link href="/vip">
+              <Crown data-icon="inline-start" />
+              Đăng ký VIP
+            </Link>
+          </Button>
         </div>
       </section>
 
-      {session?.user ? <ContinueListeningShelf items={continueListening} title="Nghe tiep" href="/tai-khoan" /> : null}
+      {/* Tiếp tục nghe */}
+      {session?.user ? (
+        <section className="mx-auto max-w-7xl px-4" style={{ marginBottom: "var(--spacing-section-gap)" }}>
+          <ContinueListeningShelf items={continueListening} title="Tiếp tục nghe" href="/tai-khoan" />
+        </section>
+      ) : null}
 
-      <section className="mx-auto max-w-7xl px-4 py-6">
-        <div className="flex gap-2 overflow-x-auto pb-1">
-          {shelves.categories.map((category) => (
-            <Link key={category.id} href={`/the-loai/${category.slug}`} className="inline-flex h-10 shrink-0 items-center gap-2 rounded-md border bg-card px-4 text-sm font-semibold text-muted-foreground hover:border-accent hover:text-foreground">
-              <Sparkles aria-hidden="true" className="size-4 text-accent" />
-              {category.name}
+      {/* Dành riêng cho bạn — horizontal scroll */}
+      <section className="mx-auto max-w-7xl px-4" style={{ marginBottom: "var(--spacing-section-gap)" }}>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-bold" style={{ fontFamily: "var(--font-headline)" }}>Dành riêng cho bạn</h2>
+          <Link href="/truyen?sort=rating" className="text-sm font-semibold text-accent hover:underline">Xem tất cả &rarr;</Link>
+        </div>
+        <div className="flex gap-4 overflow-x-auto hide-scrollbar pb-4 snap-x snap-mandatory">
+          {shelves.recommended.slice(0, 10).map((series) => (
+            <Link
+              key={series.id}
+              href={`/truyen/${series.slug}`}
+              className="w-[140px] shrink-0 flex flex-col gap-3 snap-start group"
+            >
+              <div className="w-full h-[200px] rounded-lg overflow-hidden bg-secondary relative shadow-sm group-hover:shadow-md transition-all duration-300 group-hover:-translate-y-1">
+                {series.coverUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={series.coverUrl} alt={series.title} loading="lazy" decoding="async" className="w-full h-full object-cover" />
+                ) : null}
+                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <span className="text-white text-[32px] drop-shadow-md">▶</span>
+                </div>
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-foreground line-clamp-2">{series.title}</h3>
+                <p className="text-xs text-muted-foreground line-clamp-1 mt-1">{series.authorName}</p>
+              </div>
             </Link>
           ))}
         </div>
       </section>
 
+      {/* Grid shelves */}
       <StoryShelf title="Trending 24h" href="/truyen?sort=popular" items={shelves.trending24h} />
 
-      <section className="mx-auto grid max-w-7xl gap-6 px-4 py-8 lg:grid-cols-[1fr_360px]">
-        <div>
-          <div className="mb-4 flex items-center justify-between gap-4">
-            <h2 className="text-2xl font-black">Tap moi cap nhat</h2>
-            <Link href="/truyen?sort=newest" className="text-sm font-semibold text-accent">Xem thu vien</Link>
-          </div>
-          <LatestEpisodeList episodes={shelves.latestEpisodes} />
+      <section className="mx-auto max-w-7xl px-4" style={{ marginBottom: "var(--spacing-section-gap)" }}>
+        <div className="mb-4 flex items-center justify-between gap-4">
+          <h2 className="text-xl font-bold" style={{ fontFamily: "var(--font-headline)" }}>Tập mới cập nhật</h2>
+          <Link href="/truyen?sort=newest" className="text-sm font-semibold text-accent hover:underline">Xem thư viện &rarr;</Link>
         </div>
-        <aside className="rounded-lg border bg-card/90 p-5">
-          <div className="flex items-center gap-2 text-accent">
-            <Headphones aria-hidden="true" />
-            <h2 className="text-xl font-black">Nghe tiep tren mobile</h2>
-          </div>
-          <p className="mt-3 text-sm leading-6 text-muted-foreground">
-            Cai website nhu ung dung de mo nhanh tu man hinh chinh, giu player va tiep tuc nghe bo truyen dang theo doi.
-          </p>
-          <div className="mt-5">
-            <InstallAppButton />
-          </div>
-        </aside>
+        <LatestEpisodeList episodes={shelves.latestEpisodes} />
       </section>
 
-      <StoryShelf title="Trending 7 ngay" href="/truyen?sort=popular" items={shelves.trending7d} />
+      <StoryShelf title="Trending 7 ngày" href="/truyen?sort=popular" items={shelves.trending7d} />
       <StoryShelf title="Rising" href="/truyen?sort=newest" items={shelves.rising} />
-      <StoryShelf title="Truyen moi len ke" href="/truyen?sort=newest" items={shelves.latest} />
+      <StoryShelf title="Truyện mới lên kệ" href="/truyen?sort=newest" items={shelves.latest} />
       <StoryShelf
-        title={shelves.recommendationMeta.personalized ? "Danh cho ban" : "Co the ban se thich"}
+        title={shelves.recommendationMeta.personalized ? "Dành cho bạn" : "Có thể bạn sẽ thích"}
         href="/truyen?sort=rating"
         items={shelves.recommended}
       />
+
+      {/* PWA promo */}
+      <section className="mx-auto max-w-7xl px-4" style={{ marginBottom: "var(--spacing-section-gap)" }}>
+        <div className="rounded-xl border border-[color-mix(in_oklch,var(--foreground)_6%,transparent)] bg-[color-mix(in_srgb,var(--secondary)_15%,var(--background))] p-6 text-center">
+          <Headphones className="mx-auto size-8 text-accent" />
+          <h2 className="mt-3 text-lg font-bold" style={{ fontFamily: "var(--font-headline)" }}>Nghe tiếp trên mobile</h2>
+          <p className="mt-2 text-sm text-muted-foreground max-w-md mx-auto">
+            Cài website như ứng dụng để mở nhanh từ màn hình chính, giữ player và tiếp tục nghe bộ truyện đang theo dõi.
+          </p>
+          <div className="mt-4">
+            <InstallAppButton />
+          </div>
+        </div>
+      </section>
     </>
   );
 }
