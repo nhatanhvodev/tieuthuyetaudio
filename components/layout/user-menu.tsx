@@ -18,35 +18,72 @@ import type { Session } from "next-auth";
 
 export function UserMenu({ session }: { session: Session }) {
   const user = session.user;
-  const initials = (user.name ?? user.email).charAt(0).toUpperCase();
+  const initials = (user.name ?? user.email ?? "U").charAt(0).toUpperCase();
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="gap-2 rounded-full px-2">
-          <Avatar className="size-8">
-            <AvatarFallback>{initials}</AvatarFallback>
+        <Button variant="ghost" size="sm" className="gap-2.5 rounded-full px-1.5 py-1.5 sm:px-3">
+          <Avatar className="size-9 ring-2 ring-border/60">
+            {user.image ? (
+              <img
+                src={user.image}
+                alt={user.name ?? ""}
+                className="size-full rounded-full object-cover"
+                referrerPolicy="no-referrer"
+              />
+            ) : (
+              <AvatarFallback className="bg-accent/15 text-accent text-sm font-bold">
+                {initials}
+              </AvatarFallback>
+            )}
           </Avatar>
-          <span className="hidden text-sm font-medium sm:inline">{user.name ?? user.email}</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel className="font-normal">
-          <div className="flex items-center gap-2">
-            <Avatar className="size-9">
-              <AvatarFallback>{initials}</AvatarFallback>
-            </Avatar>
-            <div>
-              <p className="text-sm font-semibold leading-none">{user.name ?? user.email}</p>
-              <p className="mt-1 text-xs text-muted-foreground">{user.email}</p>
-            </div>
+          <div className="hidden flex-col items-start sm:flex">
+            <span className="text-sm font-semibold leading-tight">{user.name ?? "Người dùng"}</span>
+            <span className="text-[11px] leading-tight text-muted-foreground">
+              {user.isVip ? "VIP" : "Miễn phí"}
+            </span>
           </div>
           {user.isVip ? (
-            <Badge variant="accent" className="mt-2">
-              <Crown className="mr-1 size-3" />
-              VIP
-            </Badge>
+            <Crown className="hidden size-3.5 text-amber-400 sm:block" />
           ) : null}
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-64">
+        <DropdownMenuLabel className="font-normal">
+          <div className="flex items-center gap-3">
+            <Avatar className="size-11 ring-2 ring-border/50">
+              {user.image ? (
+                <img
+                  src={user.image}
+                  alt={user.name ?? ""}
+                  className="size-full rounded-full object-cover"
+                  referrerPolicy="no-referrer"
+                />
+              ) : (
+                <AvatarFallback className="bg-accent/15 text-accent text-base font-bold">
+                  {initials}
+                </AvatarFallback>
+              )}
+            </Avatar>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold">{user.name ?? "Người dùng"}</p>
+              <p className="truncate text-xs text-muted-foreground">{user.email}</p>
+              <div className="mt-1.5 flex items-center gap-1.5">
+                {user.isVip ? (
+                  <Badge variant="accent" size="xs" className="inline-flex items-center gap-1">
+                    <Crown className="size-3" />
+                    VIP
+                  </Badge>
+                ) : (
+                  <Badge variant="secondary" size="xs">Miễn phí</Badge>
+                )}
+                {user.role === "ADMIN" ? (
+                  <Badge variant="outline" size="xs">ADMIN</Badge>
+                ) : null}
+              </div>
+            </div>
+          </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>

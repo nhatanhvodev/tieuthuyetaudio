@@ -224,7 +224,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       <audio
         ref={audioRef}
         src={current?.audioUrl}
-        onError={() => setError("Khong tai duoc audio demo. Vui long thu tap khac.")}
+        onError={() => setError("Không tải được audio demo. Vui lòng thử tập khác.")}
         onLoadedMetadata={(event) => setProgress(event.currentTarget.currentTime, event.currentTarget.duration || 0)}
         onTimeUpdate={(event) => setProgress(event.currentTarget.currentTime, event.currentTarget.duration || 0)}
       />
