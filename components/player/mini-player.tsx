@@ -76,7 +76,6 @@ export function MiniPlayer() {
   const nextEpisode = currentQueueIndex >= 0 ? queue[currentQueueIndex + 1] ?? null : null;
   const prevEpisode = currentQueueIndex > 0 ? queue[currentQueueIndex - 1] ?? null : null;
   const showNextUp = featureFlags.continuousPlay && autoPlayNext && Boolean(nextEpisode) && percent >= 85;
-  const waveformPercent = `${Math.max(0, Math.min(100, percent))}%`;
   const currentTimeLabel = formatTimeSmart(progress.currentSeconds, progress.durationSeconds);
   const durationLabel = formatTimeSmart(progress.durationSeconds, progress.durationSeconds);
 
@@ -96,12 +95,12 @@ export function MiniPlayer() {
 
   return (
     <>
-      <aside className="fixed inset-x-3 bottom-[4.7rem] z-40 overflow-hidden rounded-2xl border border-border/20 bg-card/95 p-3 text-card-foreground shadow-[0_20px_45px_rgba(0,0,0,0.5)] backdrop-blur-xl transition-all duration-300 md:inset-x-0 md:bottom-0 md:overflow-visible md:rounded-none md:border-x-0 md:border-b-0 md:px-6 md:py-3">
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-accent/10 via-transparent to-fuchsia-500/10" />
-
-        <div className="hidden md:grid md:grid-cols-[1fr_auto_1fr] md:items-center md:gap-6">
+      {/* Mini player — Stitch floating pill */}
+      <aside className="fixed inset-x-3 bottom-[4.7rem] z-40 overflow-hidden rounded-2xl border border-[color-mix(in_oklch,var(--foreground)_8%,transparent)] bg-[color-mix(in_srgb,var(--background)_95%,transparent)] p-3 shadow-[0_20px_45px_rgba(120,53,15,0.1)] backdrop-blur-[12px] transition-all duration-300 md:inset-x-0 md:bottom-6 md:left-1/2 md:max-w-md md:-translate-x-1/2 md:overflow-visible md:rounded-xl md:border md:px-4 md:py-3 soft-shadow">
+        {/* Desktop controls */}
+        <div className="hidden md:grid md:grid-cols-[1fr_auto_1fr] md:items-center md:gap-4">
           <div className="flex min-w-0 items-center gap-3">
-            <div className="relative size-14 shrink-0 overflow-hidden rounded-lg bg-secondary">
+            <div className="relative size-12 shrink-0 overflow-hidden rounded-lg bg-secondary">
               {current.coverUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -114,49 +113,48 @@ export function MiniPlayer() {
               ) : null}
             </div>
             <Link href={`/truyen/${current.seriesSlug}/tap/${current.episodeNumber}`} className="min-w-0">
-              <p className="truncate text-sm font-semibold text-card-foreground">{current.title}</p>
-              <p className="truncate text-xs text-muted-foreground">{current.seriesTitle}</p>
-              {showNextUp && nextEpisode ? <p className="mt-1 truncate text-[11px] text-accent">Sắp phát tiếp: {nextEpisode.title}</p> : null}
+              <p className="truncate text-sm font-semibold text-foreground">{current.title}</p>
+              <p className="truncate text-xs text-muted-foreground" style={{ fontFamily: "var(--font-label)" }}>{current.seriesTitle}</p>
+              {showNextUp && nextEpisode ? <p className="mt-1 truncate text-[11px] text-accent" style={{ fontFamily: "var(--font-label)" }}>Sắp phát tiếp: {nextEpisode.title}</p> : null}
             </Link>
           </div>
 
-          <div className="flex min-w-[380px] flex-col items-center">
+          <div className="flex min-w-[340px] flex-col items-center">
             <div className="flex items-center gap-1">
-              <Button type="button" variant="secondary" size="icon" className="h-8 w-8 rounded-full border-border bg-secondary text-muted-foreground hover:bg-muted" onClick={() => seek(-30)} aria-label="Lùi 30 giây">
+              <Button type="button" variant="secondary" size="icon" className="h-8 w-8 rounded-full" onClick={() => seek(-30)} aria-label="Lùi 30 giây">
                 <span className="text-[10px] font-semibold tabular-nums">-30</span>
               </Button>
-              <Button type="button" variant="secondary" size="icon" className="h-8 w-8 rounded-full border-border bg-secondary text-muted-foreground hover:bg-muted" onClick={() => seek(-10)} aria-label="Lùi 10 giây">
+              <Button type="button" variant="secondary" size="icon" className="h-8 w-8 rounded-full" onClick={() => seek(-10)} aria-label="Lùi 10 giây">
                 <span className="text-[10px] font-semibold tabular-nums">-10</span>
               </Button>
-              <Button type="button" variant="secondary" size="icon" className="h-9 w-9 rounded-full border-border bg-secondary text-card-foreground hover:bg-muted" onClick={() => playPrevInQueue()} disabled={!prevEpisode} aria-label="Tập trước">
+              <Button type="button" variant="secondary" size="icon" className="h-9 w-9 rounded-full" onClick={() => playPrevInQueue()} disabled={!prevEpisode} aria-label="Tập trước">
                 <SkipBack aria-hidden="true" />
               </Button>
-              <Button type="button" variant="secondary" size="icon" className="h-9 w-9 rounded-full border-border bg-secondary text-card-foreground hover:bg-muted" onClick={togglePlay} aria-label={isPlaying ? "Tạm dừng" : "Phát"}>
+              <Button type="button" variant="secondary" size="icon" className="h-9 w-9 rounded-full" onClick={togglePlay} aria-label={isPlaying ? "Tạm dừng" : "Phát"}>
                 {isPlaying ? <Pause aria-hidden="true" /> : <Play aria-hidden="true" className="translate-x-[1px]" />}
               </Button>
-              <Button type="button" variant="secondary" size="icon" className="h-9 w-9 rounded-full border-border bg-secondary text-card-foreground hover:bg-muted" onClick={() => playNextInQueue()} disabled={!nextEpisode} aria-label="Tập tiếp theo">
+              <Button type="button" variant="secondary" size="icon" className="h-9 w-9 rounded-full" onClick={() => playNextInQueue()} disabled={!nextEpisode} aria-label="Tập tiếp theo">
                 <SkipForward aria-hidden="true" />
               </Button>
-              <Button type="button" variant="secondary" size="icon" className="h-8 w-8 rounded-full border-border bg-secondary text-muted-foreground hover:bg-muted" onClick={() => seek(10)} aria-label="Tua 10 giây">
+              <Button type="button" variant="secondary" size="icon" className="h-8 w-8 rounded-full" onClick={() => seek(10)} aria-label="Tua 10 giây">
                 <span className="text-[10px] font-semibold tabular-nums">+10</span>
               </Button>
-              <Button type="button" variant="secondary" size="icon" className="h-8 w-8 rounded-full border-border bg-secondary text-muted-foreground hover:bg-muted" onClick={() => seek(30)} aria-label="Tua 30 giây">
+              <Button type="button" variant="secondary" size="icon" className="h-8 w-8 rounded-full" onClick={() => seek(30)} aria-label="Tua 30 giây">
                 <span className="text-[10px] font-semibold tabular-nums">+30</span>
               </Button>
             </div>
             <div className="mt-2 w-full">
               <div
-                className="relative h-7 cursor-pointer overflow-hidden rounded-md bg-muted/80 px-1 transition-all duration-200 hover:bg-secondary/80"
+                className="relative h-7 cursor-pointer overflow-hidden rounded-md bg-[color-mix(in_srgb,var(--foreground)_6%,transparent)] px-1 transition-all duration-200 hover:bg-[color-mix(in_srgb,var(--foreground)_10%,transparent)]"
                 onMouseMove={(event) => setHoverSeconds(getSeekFromPointer(event))}
                 onMouseLeave={() => setHoverSeconds(null)}
                 onClick={(event) => requestSeek(getSeekFromPointer(event))}
               >
-                <div className="absolute inset-y-1 left-1 right-1 rounded opacity-30 [background:repeating-linear-gradient(90deg,rgba(255,255,255,0.08)_0,rgba(255,255,255,0.08)_2px,transparent_2px,transparent_6px)]" />
-                <div className="absolute inset-y-1 left-1 rounded bg-accent shadow-[0_0_8px_var(--color-accent)] transition-all duration-100" style={{ width: `calc(${waveformPercent} - 2px)` }} />
+                <div className="absolute inset-y-1 left-1 rounded bg-primary transition-all duration-100" style={{ width: `calc(${Math.max(0, Math.min(100, percent))}% - 2px)` }} />
                 {hoverPercent !== null ? (
                   <>
-                    <div className="absolute inset-y-0 w-px bg-accent/90 shadow-[0_0_4px_var(--color-accent)]" style={{ left: `calc(${hoverPercent}% - 1px)` }} />
-                    <div className="absolute -top-7 rounded bg-secondary px-1.5 py-0.5 text-[10px] text-foreground shadow-md" style={{ left: `calc(${hoverPercent}% - 22px)` }}>
+                    <div className="absolute inset-y-0 w-px bg-primary/90" style={{ left: `calc(${hoverPercent}% - 1px)` }} />
+                    <div className="absolute -top-7 rounded bg-[color-mix(in_srgb,var(--secondary)_90%,var(--background))] px-1.5 py-0.5 text-[10px] text-secondary-foreground shadow-md" style={{ left: `calc(${hoverPercent}% - 22px)` }}>
                       {formatSeconds(hoverSeconds ?? 0)}
                     </div>
                   </>
@@ -177,19 +175,20 @@ export function MiniPlayer() {
                 step={0.05}
                 value={volume}
                 onChange={(event) => setVolume(Number(event.target.value))}
-                className="h-1.5 w-24 cursor-pointer accent-current"
+                className="h-1.5 w-24 cursor-pointer accent-primary"
               />
             </label>
-            <Button type="button" variant="ghost" size="sm" className="text-muted-foreground hover:bg-secondary" onClick={() => setNotesOpen((v) => !v)}>
+            <Button type="button" variant="ghost" size="sm" className="text-muted-foreground hover:bg-[color-mix(in_srgb,var(--foreground)_6%,transparent)]" onClick={() => setNotesOpen((v) => !v)}>
               Notes {notesOpen ? <ChevronDown className="size-4" /> : <ChevronUp className="size-4" />}
             </Button>
           </div>
         </div>
 
+        {/* Mobile controls */}
         <div className="md:hidden">
           <div className="mb-2">
             <div
-              className="relative h-10 cursor-pointer overflow-hidden rounded-md bg-muted/80 px-1 transition-all duration-200 hover:bg-secondary/80"
+              className="relative h-10 cursor-pointer overflow-hidden rounded-md bg-[color-mix(in_srgb,var(--foreground)_6%,transparent)] px-1 transition-all duration-200 hover:bg-[color-mix(in_srgb,var(--foreground)_10%,transparent)]"
               onTouchMove={(event) => {
                 const touch = event.touches[0];
                 const rect = (event.target as HTMLElement).closest("[data-seek-bar]")?.getBoundingClientRect();
@@ -207,12 +206,12 @@ export function MiniPlayer() {
               data-seek-bar
             >
               <div
-                className="absolute inset-y-1 left-1 rounded bg-accent shadow-[0_0_8px_var(--color-accent)] transition-all duration-100"
-                style={{ width: `calc(${waveformPercent} - 2px)` }}
+                className="absolute inset-y-1 left-1 rounded bg-primary transition-all duration-100"
+                style={{ width: `calc(${Math.max(0, Math.min(100, percent))}% - 2px)` }}
               />
               {hoverPercent !== null ? (
                 <div
-                  className="absolute inset-y-0 w-px bg-accent/90"
+                  className="absolute inset-y-0 w-px bg-primary/90"
                   style={{ left: `calc(${hoverPercent}% - 1px)` }}
                 />
               ) : null}
@@ -229,40 +228,40 @@ export function MiniPlayer() {
               ) : null}
             </div>
             <Link href={`/truyen/${current.seriesSlug}/tap/${current.episodeNumber}`} className="min-w-0 flex-1">
-              <p className="truncate text-xs font-semibold text-card-foreground">{current.title}</p>
-              <p className="truncate text-[10px] text-muted-foreground">{current.seriesTitle}</p>
+              <p className="truncate text-xs font-semibold text-foreground">{current.title}</p>
+              <p className="truncate text-[10px] text-muted-foreground" style={{ fontFamily: "var(--font-label)" }}>{current.seriesTitle}</p>
             </Link>
-            <Button type="button" variant="secondary" size="icon" className="h-8 w-8 rounded-full border-border bg-secondary text-card-foreground hover:bg-muted" onClick={() => playPrevInQueue()} disabled={!prevEpisode} aria-label="Tập trước">
+            <Button type="button" variant="secondary" size="icon" className="h-8 w-8 rounded-full" onClick={() => playPrevInQueue()} disabled={!prevEpisode} aria-label="Tập trước">
               <SkipBack aria-hidden="true" className="size-3.5" />
             </Button>
-            <Button type="button" variant="secondary" size="icon" className="h-7 w-7 rounded-full border-border bg-secondary text-[10px] font-semibold text-muted-foreground hover:bg-muted" onClick={() => seek(-10)} aria-label="Lùi 10 giây">
-              -10
+            <Button type="button" variant="secondary" size="icon" className="h-7 w-7 rounded-full" onClick={() => seek(-10)} aria-label="Lùi 10 giây">
+              <span className="text-[10px] font-semibold">-10</span>
             </Button>
             <Button type="button" size="icon" className="h-10 w-10 rounded-full bg-primary text-primary-foreground hover:brightness-90" onClick={togglePlay} aria-label={isPlaying ? "Tạm dừng" : "Phát"}>
               {isPlaying ? <Pause aria-hidden="true" className="size-5" /> : <Play aria-hidden="true" className="size-5" />}
             </Button>
-            <Button type="button" variant="secondary" size="icon" className="h-7 w-7 rounded-full border-border bg-secondary text-[10px] font-semibold text-muted-foreground hover:bg-muted" onClick={() => seek(10)} aria-label="Tua 10 giây">
-              +10
+            <Button type="button" variant="secondary" size="icon" className="h-7 w-7 rounded-full" onClick={() => seek(10)} aria-label="Tua 10 giây">
+              <span className="text-[10px] font-semibold">+10</span>
             </Button>
-            <Button type="button" variant="secondary" size="icon" className="h-8 w-8 rounded-full border-border bg-secondary text-card-foreground hover:bg-muted" onClick={() => playNextInQueue()} disabled={!nextEpisode} aria-label="Tập tiếp theo">
+            <Button type="button" variant="secondary" size="icon" className="h-8 w-8 rounded-full" onClick={() => playNextInQueue()} disabled={!nextEpisode} aria-label="Tập tiếp theo">
               <SkipForward aria-hidden="true" className="size-3.5" />
             </Button>
           </div>
         </div>
       </aside>
 
-      <section className={`fixed inset-x-0 bottom-[72px] z-30 hidden border-t border-border/20 bg-card/98 px-6 pb-5 pt-4 text-card-foreground backdrop-blur-xl transition-all duration-300 md:block ${notesOpen ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-8 opacity-0"}`}>
+      {/* Notes panel */}
+      <section className={`fixed inset-x-0 bottom-[72px] z-30 hidden border-t border-[color-mix(in_oklch,var(--foreground)_8%,transparent)] bg-[color-mix(in_srgb,var(--background)_98%,transparent)] backdrop-blur-xl px-6 pb-5 pt-4 transition-all duration-300 md:block ${notesOpen ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-8 opacity-0"}`}>
         <div className="mx-auto grid max-w-6xl gap-4 md:grid-cols-[1fr_1fr]">
           <div>
             <p className="text-sm font-semibold">Lyrics preview</p>
-            <div className="mt-2 rounded-lg border border-border bg-muted/70 p-3 text-sm text-muted-foreground">
+            <div className="mt-2 rounded-lg border border-[color-mix(in_oklch,var(--foreground)_8%,transparent)] bg-muted/70 p-3 text-sm text-muted-foreground">
               <p>{formatSeconds(progress.currentSeconds)} — [Chưa có lyrics đồng bộ cho tập này]</p>
-              <p className="mt-1 text-muted-foreground">Bạn có thể thay bằng lyric thật từ backend sau.</p>
             </div>
           </div>
           <div>
             <p className="text-sm font-semibold">Quick notes</p>
-            <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Ghi chú nhanh khi đang nghe..." className="mt-2 min-h-24 border-border bg-muted text-foreground" />
+            <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Ghi chú nhanh khi đang nghe..." className="mt-2 min-h-24" />
           </div>
         </div>
       </section>
