@@ -8,6 +8,7 @@ export async function getAccountOverview(userId: string) {
       id: true,
       email: true,
       name: true,
+      image: true,
       role: true,
       isVip: true,
       createdAt: true

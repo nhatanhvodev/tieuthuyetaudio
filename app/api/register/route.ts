@@ -21,13 +21,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Email đã được sử dụng" }, { status: 409 });
   }
 
-  await db.user.create({
+  const user = await db.user.create({
     data: {
       email: parsed.data.email,
       name: parsed.data.name,
       passwordHash: await hashPassword(parsed.data.password)
-    }
+    },
+    select: { id: true, email: true }
   });
+
+  console.info("[register] New user registered:", { userId: user.id, email: user.email });
 
   return NextResponse.json({ ok: true });
 }

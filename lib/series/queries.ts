@@ -32,6 +32,7 @@ export const seriesDetailInclude = {
         select: {
           name: true,
           email: true,
+          image: true,
           isVip: true
         }
       }
@@ -319,42 +320,62 @@ export async function getRecommendedSeriesForUser(userId: string, take = 8): Pro
 
 export async function getHomeShelves(userId?: string) {
   const recommendationEnabled = isFeatureEnabled("recommendation");
-  const [latest, popular, editorialRecommended, latestEpisodes, categories, discovery, personalizedRecommended] = await Promise.all([
-    db.series.findMany({ include: seriesInclude, orderBy: { createdAt: "desc" }, take: 8 }),
-    db.series.findMany({ include: seriesInclude, orderBy: { listenCount: "desc" }, take: 8 }),
-    db.series.findMany({ include: seriesInclude, orderBy: { averageRating: "desc" }, take: 8 }),
-    db.episode.findMany({
-      include: {
-        series: {
-          include: seriesInclude
-        }
-      },
-      orderBy: { createdAt: "desc" },
-      take: 10
-    }),
-    db.category.findMany({ orderBy: { name: "asc" } }),
-    getDiscoveryRankings(8),
-    recommendationEnabled && userId ? getRecommendedSeriesForUser(userId, 8) : Promise.resolve([])
-  ]);
 
-  return {
-    latest,
-    popular,
-    recommended: personalizedRecommended.length
-      ? personalizedRecommended
-      : discovery.trending7d.length
-        ? discovery.trending7d
-        : editorialRecommended,
-    latestEpisodes,
-    categories,
-    trending24h: discovery.trending24h,
-    trending7d: discovery.trending7d,
-    rising: discovery.rising,
-    recommendationMeta: {
-      personalized: personalizedRecommended.length > 0,
-      enabled: recommendationEnabled
-    }
-  };
+  try {
+    const [latest, popular, editorialRecommended, latestEpisodes, categories, discovery, personalizedRecommended] = await Promise.all([
+      db.series.findMany({ include: seriesInclude, orderBy: { createdAt: "desc" }, take: 8 }),
+      db.series.findMany({ include: seriesInclude, orderBy: { listenCount: "desc" }, take: 8 }),
+      db.series.findMany({ include: seriesInclude, orderBy: { averageRating: "desc" }, take: 8 }),
+      db.episode.findMany({
+        include: {
+          series: {
+            include: seriesInclude
+          }
+        },
+        orderBy: { createdAt: "desc" },
+        take: 10
+      }),
+      db.category.findMany({ orderBy: { name: "asc" } }),
+      getDiscoveryRankings(8),
+      recommendationEnabled && userId ? getRecommendedSeriesForUser(userId, 8) : Promise.resolve([])
+    ]);
+
+    return {
+      latest,
+      popular,
+      recommended: personalizedRecommended.length
+        ? personalizedRecommended
+        : discovery.trending7d.length
+          ? discovery.trending7d
+          : editorialRecommended,
+      latestEpisodes,
+      categories,
+      trending24h: discovery.trending24h,
+      trending7d: discovery.trending7d,
+      rising: discovery.rising,
+      recommendationMeta: {
+        personalized: personalizedRecommended.length > 0,
+        enabled: recommendationEnabled
+      }
+    };
+  } catch (error) {
+    console.error("[getHomeShelves] Fallback to empty shelves due to data source error", error);
+
+    return {
+      latest: [],
+      popular: [],
+      recommended: [],
+      latestEpisodes: [],
+      categories: [],
+      trending24h: [],
+      trending7d: [],
+      rising: [],
+      recommendationMeta: {
+        personalized: false,
+        enabled: recommendationEnabled
+      }
+    };
+  }
 }
 
 export async function getContinueListeningByUser(userId: string, take = 8): Promise<ContinueListeningItem[]> {

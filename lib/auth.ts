@@ -11,8 +11,16 @@ const credentialsSchema = z.object({
 });
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  trustHost: true,
+  secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,
   session: {
     strategy: "jwt"
+  },
+  logger: {
+    error(code, ...message) {
+      if (`${code}`.includes("JWTSessionError")) return;
+      console.error(`[auth][${code}]`, ...message);
+    }
   },
   pages: {
     signIn: "/dang-nhap"
@@ -39,6 +47,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           id: user.id,
           email: user.email,
           name: user.name,
+          image: user.image,
           role: user.role,
           isVip: user.isVip
         };
@@ -51,6 +60,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.id = user.id as string;
         token.role = user.role ?? "USER";
         token.isVip = user.isVip ?? false;
+        token.image = user.image ?? null;
       }
       return token;
     },
@@ -58,13 +68,22 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       session.user.id = token.id;
       session.user.role = token.role ?? "USER";
       session.user.isVip = token.isVip ?? false;
+      session.user.image = token.image as string | null;
       return session;
     }
   }
 });
 
+export async function safeAuth() {
+  try {
+    return await auth();
+  } catch {
+    return null;
+  }
+}
+
 export async function requireUser() {
-  const session = await auth();
+  const session = await safeAuth();
   if (!session?.user) redirect("/dang-nhap");
   return session;
 }

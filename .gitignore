@@ -5,6 +5,9 @@ coverage
 .env
 .env.local
 .env.*.local
+.env.production
+*.pem
+*.key
 dist
 *.tsbuildinfo
 .superpowers

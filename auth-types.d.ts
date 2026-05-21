@@ -8,6 +8,7 @@ declare module "next-auth" {
       id: string;
       email: string;
       name?: string | null;
+      image?: string | null;
       role: UserRole;
       isVip: boolean;
     };
@@ -16,6 +17,7 @@ declare module "next-auth" {
   interface User {
     role?: UserRole;
     isVip?: boolean;
+    image?: string | null;
   }
 }
 
@@ -24,5 +26,6 @@ declare module "next-auth/jwt" {
     id: string;
     role?: UserRole;
     isVip?: boolean;
+    image?: string | null;
   }
 }

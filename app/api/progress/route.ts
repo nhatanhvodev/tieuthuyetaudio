@@ -1,7 +1,7 @@
 ﻿import { NextResponse } from "next/server";
 import { z } from "zod";
 import { analyticsPayloadSchema } from "@/lib/analytics/events";
-import { auth } from "@/lib/auth";
+import { safeAuth } from "@/lib/auth";
 import { db } from "@/lib/db";
 
 const progressSchema = analyticsPayloadSchema.extend({
@@ -9,12 +9,14 @@ const progressSchema = analyticsPayloadSchema.extend({
 });
 
 export async function POST(request: Request) {
-  const session = await auth();
-  if (!session?.user) return NextResponse.json({ error: "Chua dang nhap" }, { status: 401 });
+  const session = await safeAuth();
+  // Guest users can still use the player; silently ignore analytics writes to avoid 401 spam in browser console.
+  if (!session?.user) return new NextResponse(null, { status: 204 });
 
   const body = await request.json().catch(() => null);
   const parsed = progressSchema.safeParse(body);
-  if (!parsed.success) return NextResponse.json({ error: "Tien trinh khong hop le" }, { status: 400 });
+  // Ignore malformed beacons/payloads to prevent noisy 400 logs from keepalive/sendBeacon edge-cases.
+  if (!parsed.success) return new NextResponse(null, { status: 204 });
 
   const payload = parsed.data;
   const completionPercent =

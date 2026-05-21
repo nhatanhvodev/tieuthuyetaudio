@@ -19,7 +19,7 @@ export async function GET(request: Request) {
   const posts = await db.communityPost.findMany({
     where: validTopic ? { topic: validTopic } : undefined,
     include: {
-      user: { select: { id: true, name: true, isVip: true } }
+      user: { select: { id: true, name: true, image: true, isVip: true } }
     },
     orderBy: [{ isPinned: "desc" }, { createdAt: "desc" }],
     take: 50
@@ -47,6 +47,7 @@ export async function GET(request: Request) {
       likes: p.likes,
       comments: p.comments,
       author: p.user.name ?? "Người dùng ẩn danh",
+      authorImage: p.user.image,
       authorVip: p.user.isVip,
       isLiked: likedPostIds.has(p.id),
       createdAt: p.createdAt.toISOString()
@@ -69,7 +70,7 @@ export async function POST(request: Request) {
       content: parsed.data.content
     },
     include: {
-      user: { select: { name: true, isVip: true } }
+      user: { select: { name: true, image: true, isVip: true } }
     }
   });
 
@@ -82,6 +83,7 @@ export async function POST(request: Request) {
     likes: post.likes,
     comments: post.comments,
     author: post.user.name ?? "Người dùng ẩn danh",
+    authorImage: post.user.image,
     authorVip: post.user.isVip,
     isLiked: false,
     createdAt: post.createdAt.toISOString()
@@ -89,7 +91,7 @@ export async function POST(request: Request) {
 }
 
 export async function PATCH(request: Request) {
-  const session = await requireAdmin();
+  await requireAdmin();
 
   const { searchParams } = new URL(request.url);
   const postId = searchParams.get("id");
@@ -105,7 +107,7 @@ export async function PATCH(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  const session = await requireAdmin();
+  await requireAdmin();
 
   const { searchParams } = new URL(request.url);
   const postId = searchParams.get("id");

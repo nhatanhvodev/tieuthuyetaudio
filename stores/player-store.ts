@@ -44,6 +44,7 @@ export type PlayerState = {
   loadEpisode: (episode: PlayerEpisode, options?: LoadEpisodeOptions) => void;
   setQueue: (queue: PlayerEpisode[], currentEpisodeId?: string) => void;
   playNextInQueue: () => PlayerEpisode | null;
+  playPrevInQueue: () => PlayerEpisode | null;
   togglePlay: () => void;
   setPlaying: (isPlaying: boolean) => void;
   setAutoPlayNext: (enabled: boolean) => void;
@@ -126,6 +127,28 @@ function createPlayerState(set: (partial: PlayerState | Partial<PlayerState> | (
       });
 
       return nextEpisode;
+    },
+    playPrevInQueue: () => {
+      const state = get();
+      const resolvedCurrentIndex =
+        state.currentQueueIndex >= 0
+          ? state.currentQueueIndex
+          : state.current
+            ? state.queue.findIndex((item) => item.episodeId === state.current?.episodeId)
+            : -1;
+      const prevIndex = resolvedCurrentIndex - 1;
+      const prevEpisode = state.queue[prevIndex] ?? null;
+      if (!prevEpisode) return null;
+
+      set({
+        current: prevEpisode,
+        currentQueueIndex: prevIndex,
+        isPlaying: true,
+        progress: { currentSeconds: 0, durationSeconds: 0 },
+        seekRequest: null
+      });
+
+      return prevEpisode;
     },
     togglePlay: () => set((state) => ({ isPlaying: Boolean(state.current) && !state.isPlaying })),
     setPlaying: (isPlaying) => set((state) => ({ isPlaying: Boolean(state.current) && isPlaying })),

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { safeAuth } from "@/lib/auth";
 import { bookmarkCreateSchema, bookmarkDeleteSchema, bookmarkQuerySchema, bookmarkUpdateSchema, type BookmarkTimelineItem } from "@/lib/bookmarks/validators";
 import { db } from "@/lib/db";
 
@@ -13,20 +13,20 @@ function serializeBookmark(bookmark: { id: string; second: number; note: string 
 }
 
 async function requireSessionUser() {
-  const session = await auth();
+  const session = await safeAuth();
   if (!session?.user) return null;
   return session.user;
 }
 
 export async function GET(request: Request) {
   const user = await requireSessionUser();
-  if (!user) return NextResponse.json({ error: "Chua dang nhap" }, { status: 401 });
+  if (!user) return NextResponse.json({ error: "Chưa đăng nhập" }, { status: 401 });
 
   const { searchParams } = new URL(request.url);
   const parsed = bookmarkQuerySchema.safeParse({
     episodeId: searchParams.get("episodeId")
   });
-  if (!parsed.success) return NextResponse.json({ error: "Tap truyen khong hop le" }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Tập truyện không hợp lệ" }, { status: 400 });
 
   const bookmarks = await db.bookmark.findMany({
     where: {
@@ -49,16 +49,16 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   const user = await requireSessionUser();
-  if (!user) return NextResponse.json({ error: "Chua dang nhap" }, { status: 401 });
+  if (!user) return NextResponse.json({ error: "Chưa đăng nhập" }, { status: 401 });
 
   const parsed = bookmarkCreateSchema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: "Moc nghe khong hop le" }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Mốc nghe không hợp lệ" }, { status: 400 });
 
   const episode = await db.episode.findUnique({
     where: { id: parsed.data.episodeId },
     select: { id: true }
   });
-  if (!episode) return NextResponse.json({ error: "Khong tim thay tap truyen" }, { status: 404 });
+  if (!episode) return NextResponse.json({ error: "Không tìm thấy tập truyện" }, { status: 404 });
 
   const bookmark = await db.bookmark.create({
     data: {
@@ -83,10 +83,10 @@ export async function POST(request: Request) {
 
 export async function DELETE(request: Request) {
   const user = await requireSessionUser();
-  if (!user) return NextResponse.json({ error: "Chua dang nhap" }, { status: 401 });
+  if (!user) return NextResponse.json({ error: "Chưa đăng nhập" }, { status: 401 });
 
   const parsed = bookmarkDeleteSchema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: "Moc nghe khong hop le" }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Mốc nghe không hợp lệ" }, { status: 400 });
 
   const deleted = await db.bookmark.deleteMany({
     where: {
@@ -95,17 +95,17 @@ export async function DELETE(request: Request) {
     }
   });
 
-  if (!deleted.count) return NextResponse.json({ error: "Khong tim thay moc nghe" }, { status: 404 });
+  if (!deleted.count) return NextResponse.json({ error: "Không tìm thấy mốc nghe" }, { status: 404 });
 
   return NextResponse.json({ ok: true });
 }
 
 export async function PUT(request: Request) {
   const user = await requireSessionUser();
-  if (!user) return NextResponse.json({ error: "Chua dang nhap" }, { status: 401 });
+  if (!user) return NextResponse.json({ error: "Chưa đăng nhập" }, { status: 401 });
 
   const parsed = bookmarkUpdateSchema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: "Noi dung ghi chu khong hop le" }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Nội dung ghi chú không hợp lệ" }, { status: 400 });
 
   const bookmark = await db.bookmark.findFirst({
     where: {
@@ -120,7 +120,7 @@ export async function PUT(request: Request) {
     }
   });
 
-  if (!bookmark) return NextResponse.json({ error: "Khong tim thay moc nghe" }, { status: 404 });
+  if (!bookmark) return NextResponse.json({ error: "Không tìm thấy mốc nghe" }, { status: 404 });
 
   const updated = await db.bookmark.update({
     where: { id: bookmark.id },

@@ -13,7 +13,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   const comments = await db.communityComment.findMany({
     where: { postId },
     include: {
-      user: { select: { id: true, name: true, isVip: true } }
+      user: { select: { id: true, name: true, image: true, isVip: true } }
     },
     orderBy: { createdAt: "asc" },
     take: 100
@@ -24,6 +24,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
       id: c.id,
       content: c.content,
       author: c.user.name ?? "Người dùng ẩn danh",
+      authorImage: c.user.image,
       authorVip: c.user.isVip,
       authorId: c.user.id,
       createdAt: c.createdAt.toISOString()
@@ -47,7 +48,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
         content: parsed.data.content
       },
       include: {
-        user: { select: { id: true, name: true, isVip: true } }
+        user: { select: { id: true, name: true, image: true, isVip: true } }
       }
     }),
     db.communityPost.update({ where: { id: postId }, data: { comments: { increment: 1 } } })
