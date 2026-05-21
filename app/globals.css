@@ -1,28 +1,114 @@
 @import "tailwindcss";
+@plugin "daisyui" {
+  themes:
+    thu-am-sac --default,
+    light,
+    dark --prefersdark,
+    cupcake,
+    bumblebee,
+    emerald,
+    corporate,
+    synthwave,
+    retro,
+    cyberpunk,
+    valentine,
+    halloween,
+    garden,
+    forest,
+    aqua,
+    lofi,
+    pastel,
+    fantasy,
+    wireframe,
+    black,
+    luxury,
+    dracula,
+    cmyk,
+    autumn,
+    business,
+    acid,
+    lemonade,
+    night,
+    coffee,
+    winter,
+    dim,
+    nord,
+    sunset;
+}
 
+/* ── Stitch Layout Tokens (always applied regardless of theme) ── */
 :root {
-  --background: #08090d;
-  --foreground: #f8fafc;
-  --card: #11151d;
-  --card-foreground: #f8fafc;
-  --popover: #11151d;
-  --popover-foreground: #f8fafc;
-  --primary: #f59e0b;
-  --primary-foreground: #1c1000;
-  --secondary: #202938;
-  --secondary-foreground: #f1f5f9;
-  --muted: #151b24;
-  --muted-foreground: #c2cad6;
-  --accent: #fbbf24;
-  --accent-foreground: #1f1300;
-  --destructive: #ef4444;
-  --destructive-foreground: #ffffff;
-  --border: #364153;
-  --input: #171d27;
-  --ring: #fbbf24;
+  --font-display: "Be Vietnam Pro", sans-serif;
+  --font-headline: "Be Vietnam Pro", sans-serif;
+  --font-body: "Be Vietnam Pro", sans-serif;
+  --font-label: "Manrope", sans-serif;
+
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-full: 9999px;
+
+  --spacing-unit: 4px;
+  --spacing-gutter: 24px;
+  --spacing-margin-mobile: 16px;
+  --spacing-margin-desktop: 80px;
+  --spacing-section-gap: 64px;
+
+  --shadow-soft: 0 4px 12px rgba(120, 53, 15, 0.04);
+  --shadow-card: 0 2px 8px rgba(120, 53, 15, 0.06);
+  --shadow-card-hover: 0 8px 24px rgba(120, 53, 15, 0.1);
+}
+
+/* ── thu-am-sac DaisyUI Color Tokens ── */
+[data-theme="thu-am-sac"] {
+  --color-primary: #8d4b00;
+  --color-primary-content: #ffffff;
+  --color-secondary: #944a23;
+  --color-secondary-content: #ffffff;
+  --color-accent: #fbbf24;
+  --color-accent-content: #1f1300;
+  --color-neutral: #554336;
+  --color-neutral-content: #fcf1c5;
+  --color-base-100: #fff9ec;
+  --color-base-200: #f3e8bd;
+  --color-base-300: #ede3b8;
+  --color-base-content: #201c02;
+  --color-info: #3b82f6;
+  --color-info-content: #ffffff;
+  --color-success: #16a34a;
+  --color-success-content: #ffffff;
+  --color-warning: #d97706;
+  --color-warning-content: #1f1300;
+  --color-error: #ba1a1a;
+  --color-error-content: #ffffff;
+}
+
+/* ── CSS Variables mapped to DaisyUI ── */
+:root {
+  --background: var(--color-base-100, #fff9ec);
+  --foreground: var(--color-base-content, #201c02);
+  --card: var(--color-base-200, #f3e8bd);
+  --card-foreground: var(--color-base-content, #201c02);
+  --popover: var(--color-base-100, #fff9ec);
+  --popover-foreground: var(--color-base-content, #201c02);
+  --primary: var(--color-primary, #8d4b00);
+  --primary-foreground: var(--color-primary-content, #ffffff);
+  --secondary: var(--color-secondary, #944a23);
+  --secondary-foreground: var(--color-secondary-content, #ffffff);
+  --muted: var(--color-base-200, #f3e8bd);
+  --muted-foreground: var(--color-neutral, #554336);
+  --accent: var(--color-accent, #fbbf24);
+  --accent-foreground: var(--color-accent-content, #1f1300);
+  --surface-1: color-mix(in srgb, var(--background) 92%, var(--foreground));
+  --surface-2: color-mix(in srgb, var(--background) 82%, var(--foreground));
+  --surface-3: color-mix(in srgb, var(--primary) 8%, var(--background));
+  --destructive: var(--color-error, #ba1a1a);
+  --destructive-foreground: var(--color-error-content, #ffffff);
+  --border: color-mix(in oklch, var(--foreground) 15%, transparent);
+  --input: var(--color-base-200, #f3e8bd);
+  --ring: var(--color-primary, #8d4b00);
   --radius: 0.5rem;
-  --admin-background: #f8fafc;
-  --admin-foreground: #0f172a;
 }
 
 @theme inline {
@@ -46,6 +132,7 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
   --radius-md: var(--radius);
+  --font-sans: var(--font-body);
 }
 
 * {
@@ -60,9 +147,9 @@ html {
 body {
   min-height: 100%;
   margin: 0;
-  background: linear-gradient(180deg, #0b0d12 0%, var(--background) 42%, #0d1016 100%);
+  background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body);
   letter-spacing: 0;
 }
 
@@ -78,13 +165,8 @@ select {
   font: inherit;
 }
 
-svg {
-  width: 1em;
-  height: 1em;
-}
-
 ::selection {
-  background: rgba(251, 191, 36, 0.35);
+  background: color-mix(in srgb, var(--primary) 35%, transparent);
 }
 
 :where(a, button, input, textarea, select, [role="button"]):focus-visible {
@@ -110,5 +192,25 @@ svg {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+@layer utilities {
+  .glass-panel {
+    background: color-mix(in srgb, var(--background) 80%, transparent);
+    border: 1px solid color-mix(in oklch, var(--foreground) 10%, transparent);
+    backdrop-filter: blur(12px);
+  }
+
+  .soft-shadow {
+    box-shadow: 0 4px 12px rgba(120, 53, 15, 0.04);
+  }
+
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 }
