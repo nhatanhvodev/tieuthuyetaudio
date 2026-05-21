@@ -21,7 +21,7 @@ export function AppFrame({ children, session }: { children: ReactNode; session: 
     <PlayerProvider>
       <div className="flex min-h-dvh flex-col">
         <SiteHeader session={session} />
-        <main className="flex-1 pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:pb-24">{children}</main>
+        <main className="flex-1 pb-[calc(5rem+4rem+env(safe-area-inset-bottom))] md:pb-28">{children}</main>
         <SiteFooter />
       </div>
       <MiniPlayer />
