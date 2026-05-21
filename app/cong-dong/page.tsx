@@ -16,6 +16,7 @@ type Post = {
   likes: number;
   comments: number;
   author: string;
+  authorImage: string | null;
   authorVip: boolean;
   isLiked: boolean;
   createdAt: string;

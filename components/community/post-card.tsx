@@ -13,6 +13,7 @@ type Post = {
   likes: number;
   comments: number;
   author: string;
+  authorImage: string | null;
   authorVip: boolean;
   isLiked: boolean;
   createdAt: string;
@@ -58,10 +59,19 @@ export function PostCard({
         <span className={`rounded-md px-2 py-0.5 text-xs font-semibold ${topicColors[post.topic] ?? "bg-secondary text-muted-foreground"}`}>
           {post.topic}
         </span>
-        <span className="text-sm text-muted-foreground">
-          bởi {post.author}
-          {post.authorVip ? <span className="ml-1 rounded bg-amber-500/20 px-1 text-[10px] font-bold text-amber-400">VIP</span> : null}
-        </span>
+        <div className="flex items-center gap-1.5">
+          <div className="flex size-5 shrink-0 items-center justify-center overflow-hidden rounded-full bg-secondary text-[10px] font-bold">
+            {post.authorImage ? (
+              <img src={post.authorImage} alt="" className="size-full object-cover" referrerPolicy="no-referrer" />
+            ) : (
+              post.author.charAt(0).toUpperCase()
+            )}
+          </div>
+          <span className="text-sm text-muted-foreground">
+            {post.author}
+            {post.authorVip ? <span className="ml-1 rounded bg-amber-500/20 px-1 text-[10px] font-bold text-amber-400">VIP</span> : null}
+          </span>
+        </div>
         <span className="ml-auto text-xs text-muted-foreground">
           {new Date(post.createdAt).toLocaleDateString("vi-VN")}
         </span>

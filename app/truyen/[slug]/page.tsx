@@ -7,7 +7,8 @@ import { SeriesDetailTabs } from "@/components/series/series-detail-tabs";
 import { StoryShelf } from "@/components/series/story-shelf";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { auth } from "@/lib/auth";
+import { safeAuth } from "@/lib/auth";
+import type { Session } from "next-auth";
 import { db } from "@/lib/db";
 import { formatCount, formatDuration, formatStatus } from "@/lib/format";
 import { getHomeShelves, getSeriesBySlug } from "@/lib/series/queries";
@@ -16,11 +17,48 @@ export const dynamic = "force-dynamic";
 
 export default async function SeriesDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const [series, session] = await Promise.all([getSeriesBySlug(slug), auth()]);
+
+  let series: Awaited<ReturnType<typeof getSeriesBySlug>> = null;
+  let session: Session | null = null;
+
+  try {
+    session = await safeAuth();
+    series = await getSeriesBySlug(slug);
+  } catch (error) {
+    console.error("[SeriesDetailPage] Fallback to notFound due to data source error", error);
+  }
+
   if (!series) notFound();
-  const related = await getHomeShelves(session?.user?.id);
-  const resumeProgress = session?.user
-    ? await db.listenProgress.findFirst({
+
+  let related: Awaited<ReturnType<typeof getHomeShelves>> = {
+    latest: [],
+    popular: [],
+    recommended: [],
+    latestEpisodes: [],
+    categories: [],
+    trending24h: [],
+    trending7d: [],
+    rising: [],
+    recommendationMeta: {
+      personalized: false,
+      enabled: false
+    }
+  };
+
+  try {
+    related = await getHomeShelves(session?.user?.id);
+  } catch (error) {
+    console.error("[SeriesDetailPage] Fallback related shelves due to data source error", error);
+  }
+
+  let resumeProgress: {
+    currentSeconds: number;
+    episode: { episodeNumber: number; title: string; durationSeconds: number | null };
+  } | null = null;
+
+  if (session?.user) {
+    try {
+      resumeProgress = await db.listenProgress.findFirst({
         where: {
           userId: session.user.id,
           currentSeconds: { gt: 0 },
@@ -39,8 +77,11 @@ export default async function SeriesDetailPage({ params }: { params: Promise<{ s
             }
           }
         }
-      })
-    : null;
+      });
+    } catch (error) {
+      console.error("[SeriesDetailPage] Fallback resume progress due to data source error", error);
+    }
+  }
 
   return (
     <>
@@ -51,9 +92,9 @@ export default async function SeriesDetailPage({ params }: { params: Promise<{ s
         <div className="absolute inset-0 bg-gradient-to-r from-background via-background/95 to-background/70" />
         <div className="relative mx-auto max-w-7xl px-4 py-6">
           <nav className="mb-5 flex items-center gap-2 text-sm text-muted-foreground">
-            <Link href="/">Trang chu</Link>
+            <Link href="/">Trang chủ</Link>
             <ChevronRight aria-hidden="true" className="size-4" />
-            <Link href="/truyen">Kho truyen</Link>
+            <Link href="/truyen">Kho truyện</Link>
             <ChevronRight aria-hidden="true" className="size-4" />
             <span className="truncate text-foreground">{series.title}</span>
           </nav>
@@ -74,34 +115,34 @@ export default async function SeriesDetailPage({ params }: { params: Promise<{ s
               <p className="mt-4 max-w-3xl leading-7 text-muted-foreground">{series.description}</p>
 
               <dl className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
-                <div className="rounded-lg border bg-card/90 p-4">
-                  <dt className="text-sm text-muted-foreground">Luot nghe</dt>
+                <div className="glass-panel rounded-lg p-4">
+                  <dt className="text-sm text-muted-foreground">Lượt nghe</dt>
                   <dd className="mt-1 flex items-center gap-2 text-xl font-black"><Headphones aria-hidden="true" /> {formatCount(series.listenCount)}</dd>
                 </div>
-                <div className="rounded-lg border bg-card/90 p-4">
-                  <dt className="text-sm text-muted-foreground">So tap</dt>
+                <div className="glass-panel rounded-lg p-4">
+                  <dt className="text-sm text-muted-foreground">Số tập</dt>
                   <dd className="mt-1 text-xl font-black">{series.episodeCount}</dd>
                 </div>
-                <div className="rounded-lg border bg-card/90 p-4">
-                  <dt className="text-sm text-muted-foreground">Danh gia</dt>
+                <div className="glass-panel rounded-lg p-4">
+                  <dt className="text-sm text-muted-foreground">Đánh giá</dt>
                   <dd className="mt-1 flex items-center gap-2 text-xl font-black"><Star aria-hidden="true" className="text-accent" /> {series.averageRating.toFixed(1)}</dd>
                 </div>
-                <div className="rounded-lg border bg-card/90 p-4">
-                  <dt className="text-sm text-muted-foreground">San xuat</dt>
+                <div className="glass-panel rounded-lg p-4">
+                  <dt className="text-sm text-muted-foreground">Sản xuất</dt>
                   <dd className="mt-1 truncate text-xl font-black">{series.producer}</dd>
                 </div>
               </dl>
 
               {resumeProgress ? (
-                <div className="mt-6 rounded-lg border border-accent/30 bg-card/90 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">Nghe tiep</p>
+                <div className="glass-panel mt-6 rounded-lg border-accent/30 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">Nghe tiếp</p>
                   <p className="mt-2 text-lg font-black">{resumeProgress.episode.title}</p>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    Ban da nghe {formatDuration(resumeProgress.currentSeconds)}
+                    Bạn đã nghe {formatDuration(resumeProgress.currentSeconds)}
                     {resumeProgress.episode.durationSeconds ? ` / ${formatDuration(resumeProgress.episode.durationSeconds)}` : ""}
                   </p>
                   <Button asChild className="mt-4">
-                    <Link href={`/truyen/${series.slug}/tap/${resumeProgress.episode.episodeNumber}`}>Tiep tuc nghe</Link>
+                    <Link href={`/truyen/${series.slug}/tap/${resumeProgress.episode.episodeNumber}`}>Tiếp tục nghe</Link>
                   </Button>
                 </div>
               ) : null}
@@ -122,11 +163,12 @@ export default async function SeriesDetailPage({ params }: { params: Promise<{ s
           rating: review.rating,
           content: review.content,
           userName: review.user.name ?? review.user.email,
+          userImage: review.user.image,
           isVip: review.user.isVip
         }))}
       />
 
-      <StoryShelf title="Truyen lien quan" items={related.recommended.filter((item) => item.id !== series.id).slice(0, 6)} />
+      <StoryShelf title="Truyện liên quan" items={related.recommended.filter((item) => item.id !== series.id).slice(0, 6)} />
     </>
   );
 }

@@ -21,9 +21,9 @@ type ContextualUpsellProps = {
 };
 
 export function ContextualUpsell({
-  title = "Mo khoa trai nghiem nghe khong gioi han",
-  description = "Nang cap VIP de mo rong thu vien, nghe lien mach va uu tien nhan cac cap nhat moi nhat.",
-  ctaLabel = "Xem quyen loi VIP",
+  title = "Mở khóa trải nghiệm nghe không giới hạn",
+  description = "Nâng cấp VIP để mở rộng thư viện, nghe liền mạch và ưu tiên nhận các cập nhật mới nhất.",
+  ctaLabel = "Xem quyền lợi VIP",
   href = "/vip",
   compact = false,
   tracking
@@ -50,7 +50,7 @@ export function ContextualUpsell({
     <aside className="rounded-lg border border-accent/40 bg-gradient-to-br from-accent/15 to-card p-4">
       <div className="flex items-center gap-2 text-accent">
         <Crown aria-hidden="true" className="size-4" />
-        <Badge variant="accent">De xuat VIP</Badge>
+        <Badge variant="accent">Đề xuất VIP</Badge>
       </div>
       <h3 className={`mt-3 font-black ${compact ? "text-lg" : "text-2xl"}`}>{title}</h3>
       <p className="mt-2 text-sm leading-6 text-muted-foreground">{description}</p>

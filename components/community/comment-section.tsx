@@ -9,6 +9,7 @@ type Comment = {
   id: string;
   content: string;
   author: string;
+  authorImage: string | null;
   authorVip: boolean;
   authorId: string;
   createdAt: string;
@@ -57,6 +58,13 @@ export function CommentSection({ postId }: { postId: string }) {
           {comments.map((c) => (
             <div key={c.id} className="rounded-lg bg-muted/60 p-3">
               <div className="flex items-center gap-2">
+                <div className="flex size-5 shrink-0 items-center justify-center overflow-hidden rounded-full bg-secondary text-[10px] font-bold">
+                  {c.authorImage ? (
+                    <img src={c.authorImage} alt="" className="size-full object-cover" referrerPolicy="no-referrer" />
+                  ) : (
+                    c.author.charAt(0).toUpperCase()
+                  )}
+                </div>
                 <span className="text-sm font-semibold">{c.author}</span>
                 {c.authorVip ? <span className="rounded bg-amber-500/20 px-1 text-[10px] font-bold text-amber-400">VIP</span> : null}
                 <span className="text-xs text-muted-foreground">{new Date(c.createdAt).toLocaleDateString("vi-VN")}</span>

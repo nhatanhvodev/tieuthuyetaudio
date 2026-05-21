@@ -22,16 +22,16 @@ export function ReviewForm({ seriesId }: { seriesId: string }) {
           content: String(formData.get("content") ?? "")
         })
       });
-      setMessage(response.ok ? "Da luu danh gia" : "Can dang nhap de danh gia");
+      setMessage(response.ok ? "Đã lưu đánh giá" : "Cần đăng nhập để đánh giá");
     });
   }
 
   return (
-    <form action={submit} className="flex flex-col gap-3 rounded-lg border bg-card/90 p-4">
-      <p className="font-black">Viet danh gia</p>
+    <form action={submit} className="glass-panel flex flex-col gap-3 rounded-lg p-4">
+      <p className="font-black">Viết đánh giá</p>
       <RatingStars value={rating} onChange={setRating} />
-      <Textarea name="content" aria-label="Noi dung danh gia" placeholder="Cam nhan cua ban ve truyen nay" />
-      <Button type="submit" disabled={isPending}>{isPending ? "Dang luu..." : "Gui danh gia"}</Button>
+      <Textarea name="content" aria-label="Nội dung đánh giá" placeholder="Cảm nhận của bạn về truyện này" />
+      <Button type="submit" disabled={isPending}>{isPending ? "Đang lưu..." : "Gửi đánh giá"}</Button>
       {message ? <p className="text-sm text-muted-foreground">{message}</p> : null}
     </form>
   );

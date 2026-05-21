@@ -8,11 +8,19 @@ export const dynamic = "force-dynamic";
 export default async function SearchPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const params = await searchParams;
   const q = typeof params.q === "string" ? params.q : "";
-  const results = q ? await getSeriesList({ q, sort: "newest" }) : [];
+  let results: Awaited<ReturnType<typeof getSeriesList>> = [];
+
+  if (q) {
+    try {
+      results = await getSeriesList({ q, sort: "newest" });
+    } catch (error) {
+      console.error("[SearchPage] Fallback to empty results due to data source error", error);
+    }
+  }
   return (
     <section className="mx-auto max-w-7xl px-4 py-10">
       <h1 className="text-4xl font-black">Tìm kiếm</h1>
-      <div className="mt-6 max-w-2xl"><SearchBox defaultValue={q} /></div>
+      <div className="glass-panel mt-6 max-w-2xl rounded-lg p-3"><SearchBox defaultValue={q} /></div>
       {results.length ? (
         <>
           <p className="mt-6 text-sm text-muted-foreground">Tìm thấy {results.length} bộ truyện phù hợp.</p>
@@ -21,7 +29,12 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
           </div>
         </>
       ) : (
-        <div className="mt-8"><EmptyState title="Nhập từ khóa để tìm truyện" description="Tìm theo tên truyện, nhà sản xuất hoặc mô tả demo." /></div>
+        <div className="mt-8">
+          <EmptyState
+            title={q ? `Không tìm thấy kết quả cho “${q}”` : "Nhập từ khóa để tìm truyện"}
+            description={q ? "Hãy thử từ khóa ngắn hơn, đổi cách viết hoặc tìm theo tên truyện gần đúng." : "Tìm theo tên truyện, nhà sản xuất hoặc mô tả nội dung."}
+          />
+        </div>
       )}
     </section>
   );

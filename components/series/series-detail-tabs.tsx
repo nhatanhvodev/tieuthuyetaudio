@@ -21,13 +21,14 @@ type Review = {
   rating: number;
   content: string | null;
   userName: string;
+  userImage: string | null;
   isVip: boolean;
 };
 
 const tabs = [
-  { id: "episodes", label: "Danh sach tap" },
-  { id: "reviews", label: "Danh gia" },
-  { id: "comments", label: "Thao luan" }
+  { id: "episodes", label: "Danh sách tập" },
+  { id: "reviews", label: "Đánh giá" },
+  { id: "comments", label: "Thảo luận" }
 ] as const;
 
 type TabId = (typeof tabs)[number]["id"];
@@ -49,7 +50,7 @@ export function SeriesDetailTabs({
 
   return (
     <section className="mx-auto max-w-7xl px-4 py-8">
-      <div className="mb-4 flex gap-2 overflow-x-auto rounded-lg border bg-card/80 p-1">
+      <div className="glass-panel mb-4 flex gap-2 overflow-x-auto rounded-lg p-1">
         {tabs.map((tab) => (
           <button
             key={tab.id}
@@ -57,7 +58,7 @@ export function SeriesDetailTabs({
             onClick={() => setActiveTab(tab.id)}
             className={cn(
               "h-10 shrink-0 rounded-md px-4 text-sm font-semibold text-muted-foreground transition",
-              activeTab === tab.id && "bg-accent text-accent-foreground"
+              activeTab === tab.id && "bg-[color:var(--primary)] text-[color:var(--primary-foreground)] shadow-sm"
             )}
           >
             {tab.label}
@@ -72,10 +73,14 @@ export function SeriesDetailTabs({
           <div className="grid gap-3">
             {reviews.length ? (
               reviews.map((review) => (
-                <article key={review.id} className="rounded-lg border bg-card/90 p-4">
+                <article key={review.id} className="glass-panel rounded-lg p-4">
                   <div className="flex flex-wrap items-center gap-2">
-                    <div className="flex size-9 items-center justify-center rounded-full bg-secondary text-sm font-black">
-                      {review.userName.slice(0, 1).toUpperCase()}
+                    <div className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-secondary text-sm font-black">
+                      {review.userImage ? (
+                        <img src={review.userImage} alt="" className="size-full object-cover" referrerPolicy="no-referrer" />
+                      ) : (
+                        review.userName.slice(0, 1).toUpperCase()
+                      )}
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="truncate font-semibold">{review.userName}</p>
@@ -87,11 +92,11 @@ export function SeriesDetailTabs({
                     </div>
                     {review.isVip ? <Badge variant="accent">VIP</Badge> : null}
                   </div>
-                  <p className="mt-3 text-sm leading-6 text-muted-foreground">{review.content ?? "Nguoi nghe chua de lai noi dung danh gia."}</p>
+                  <p className="mt-3 text-sm leading-6 text-muted-foreground">{review.content ?? "Người nghe chưa để lại nội dung đánh giá."}</p>
                 </article>
               ))
             ) : (
-              <div className="rounded-lg border bg-card/90 p-5 text-muted-foreground">Chua co danh gia nao cho truyen nay.</div>
+              <div className="glass-panel rounded-lg p-5 text-muted-foreground">Chưa có đánh giá nào cho truyện này.</div>
             )}
           </div>
           <ReviewForm seriesId={seriesId} />
@@ -100,15 +105,15 @@ export function SeriesDetailTabs({
 
       {activeTab === "comments" ? (
         <div className="grid gap-3">
-          {["Tap moi nghe on tren mobile, player khong bi che khi cuon.", "Minh muon them lich ra tap va bo loc truyen da hoan thanh."].map((comment, index) => (
-            <article key={comment} className="rounded-lg border bg-card/90 p-4">
+          {["Tập mới nghe ổn trên mobile, player không bị che khi cuộn.", "Mình muốn thêm lịch ra tập và bộ lọc truyện đã hoàn thành."].map((comment, index) => (
+            <article key={comment} className="glass-panel rounded-lg p-4">
               <div className="flex items-center gap-2">
                 <div className="flex size-9 items-center justify-center rounded-full bg-secondary font-black">{index + 1}</div>
                 <div>
-                  <p className="font-semibold">{index === 0 ? "Ban nghe thuong xuyen" : "Thanh vien moi"}</p>
+                  <p className="font-semibold">{index === 0 ? "Bạn nghe thường xuyên" : "Thành viên mới"}</p>
                   <p className="inline-flex items-center gap-1 text-sm text-muted-foreground">
                     <MessageCircle aria-hidden="true" className="size-4" />
-                    Thao luan cong dong
+                    Thảo luận cộng đồng
                   </p>
                 </div>
               </div>

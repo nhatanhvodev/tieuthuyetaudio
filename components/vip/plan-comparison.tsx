@@ -8,14 +8,14 @@ type ComparisonItem = {
 };
 
 const comparison: ComparisonItem[] = [
-  { feature: "Thu vien co san", free: "Tap thu + cac tap mo", vip: "Day du" },
-  { feature: "Tap premium", free: "Khoa mem", vip: true },
-  { feature: "Dong bo tien trinh giua cac thiet bi", free: true, vip: true },
-  { feature: "Tu dong phat tap tiep theo", free: true, vip: true },
-  { feature: "Bookmark + ghi chu", free: true, vip: true },
-  { feature: "Ho tro offline PWA", free: false, vip: true },
-  { feature: "Uu tien cap nhat noi dung moi", free: "Co ban", vip: "Uu tien" },
-  { feature: "Ho tro nhanh 1-1", free: false, vip: true }
+  { feature: "Thư viện có sẵn", free: "Tập thử + các tập mở", vip: "Đầy đủ" },
+  { feature: "Tập premium", free: "Khóa mềm", vip: true },
+  { feature: "Đồng bộ tiến trình giữa các thiết bị", free: true, vip: true },
+  { feature: "Tự động phát tập tiếp theo", free: true, vip: true },
+  { feature: "Bookmark + ghi chú", free: true, vip: true },
+  { feature: "Hỗ trợ offline PWA", free: false, vip: true },
+  { feature: "Ưu tiên cập nhật nội dung mới", free: "Cơ bản", vip: "Ưu tiên" },
+  { feature: "Hỗ trợ nhanh 1-1", free: false, vip: true }
 ];
 
 function renderValue(value: string | boolean) {
@@ -28,17 +28,37 @@ function renderValue(value: string | boolean) {
 
 export function PlanComparison() {
   return (
-    <section className="rounded-xl border bg-card/90 p-5 md:p-7">
+    <section className="glass-panel rounded-xl p-5 md:p-7">
       <div className="flex flex-wrap items-center gap-2">
-        <Badge variant="accent">Bang so sanh</Badge>
-        <p className="text-sm text-muted-foreground">Mo hinh v1 la hybrid: free + soft paywall cho cac tap premium duoc danh dau.</p>
+        <Badge variant="accent">Bảng so sánh</Badge>
+        <p className="text-sm text-muted-foreground">Mô hình v1 là hybrid: free + soft paywall cho các tập premium được đánh dấu.</p>
       </div>
 
-      <div className="mt-5 overflow-x-auto">
+      <div className="mt-5 overflow-x-auto md:hidden">
+        <div className="space-y-3">
+          {comparison.map((item) => (
+            <article key={item.feature} className="rounded-lg border bg-card/60 p-4">
+              <p className="text-sm font-bold">{item.feature}</p>
+              <div className="mt-3 grid grid-cols-2 gap-3 text-center">
+                <div className="rounded-md bg-secondary/80 p-3">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Free</p>
+                  <div className="mt-1">{renderValue(item.free)}</div>
+                </div>
+                <div className="rounded-md bg-secondary/80 p-3">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">VIP</p>
+                  <div className="mt-1">{renderValue(item.vip)}</div>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-5 hidden overflow-x-auto md:block">
         <table className="w-full min-w-[620px] border-collapse text-left text-sm">
           <thead>
             <tr className="border-b text-muted-foreground">
-              <th className="py-3 pr-4 font-semibold">Tinh nang</th>
+              <th className="py-3 pr-4 font-semibold">Tính năng</th>
               <th className="w-32 py-3 text-center font-semibold">Free</th>
               <th className="w-32 py-3 text-center font-semibold">VIP</th>
             </tr>
