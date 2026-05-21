@@ -84,7 +84,7 @@ export default async function HomePage() {
               </div>
               <div>
                 <h3 className="text-sm font-bold text-foreground line-clamp-2">{series.title}</h3>
-                <p className="text-xs text-muted-foreground line-clamp-1 mt-1">{series.authorName}</p>
+                <p className="text-xs text-muted-foreground line-clamp-1 mt-1">{series.producer ?? "Giọng đọc"}</p>
               </div>
             </Link>
           ))}
