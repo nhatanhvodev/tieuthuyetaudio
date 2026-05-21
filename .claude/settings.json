@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(git add app/api/community/ app/cong-dong/page.tsx components/community/ prisma/schema.prisma)",
+      "PowerShell(Set-Location d:\\\\tieuthuyetaudio; npx prisma generate 2>&1; if \\($LASTEXITCODE -eq 0\\) { Write-Host \"generate OK\" } else { Write-Host \"generate FAILED: $LASTEXITCODE\" })",
+      "PowerShell(Set-Location d:\\\\tieuthuyetaudio; npx prisma db push 2>&1; if \\($LASTEXITCODE -eq 0\\) { Write-Host \"db push OK\" } else { Write-Host \"db push FAILED: $LASTEXITCODE\" })",
+      "mcp__plugin_ecc_playwright__browser_navigate"
+    ]
+  }
+}

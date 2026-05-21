@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Test-Path *)",
+      "Bash(npx tsc *)",
+      "WebSearch",
+      "mcp__plugin_ecc_exa__web_search_exa",
+      "Bash(Get-ChildItem -Path \"D:\\\\tieuthuyetaudio\" -Depth 0)",
+      "Bash(Select-Object Name)",
+      "mcp__codegraph__codegraph_explore",
+      "Bash(node scripts/mobile-test.mjs)",
+      "Bash(Get-Process -Name \"node\" -ErrorAction SilentlyContinue)",
+      "Bash(Select-Object Id, ProcessName, StartTime)",
+      "Bash(Format-Table -AutoSize)",
+      "PowerShell(Get-Process -Name \"node\" -ErrorAction SilentlyContinue)",
+      "Bash(curl -s -o NUL -w \"%{http_code}\" http://localhost:3000/tim-kiem)",
+      "Bash(curl -s -o NUL -w \"%{http_code}\" http://localhost:3000/the-loai)",
+      "Bash(curl -s -o NUL -w \"%{http_code}\" http://localhost:3000/vip)",
+      "Bash(npx playwright *)",
+      "Bash(git add *)",
+      "Bash(git commit -m '@ *)",
+      "PowerShell(npx tsc --noEmit 2>&1)",
+      "WebFetch(domain:stitch.withgoogle.com)",
+      "PowerShell(npx -y stitch-design-cli project get 18068027846235237633 --json 2>&1)",
+      "Bash(curl *)",
+      "mcp__stitch__get_screen",
+      "Bash(git commit *)"
+    ]
+  }
+}
