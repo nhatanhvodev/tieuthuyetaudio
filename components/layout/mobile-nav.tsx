@@ -1,16 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { BookOpen, Home, MessageSquare, Search, User } from "lucide-react";
 import { usePathname } from "next/navigation";
+import { Home, Library, Grid3X3, MessageSquare, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const items = [
   { href: "/", label: "Trang chủ", icon: Home },
-  { href: "/tim-kiem", label: "Tìm kiếm", icon: Search },
-  { href: "/truyen", label: "Kho truyện", icon: BookOpen },
+  { href: "/truyen", label: "Thư viện", icon: Library },
+  { href: "/the-loai", label: "Thể loại", icon: Grid3X3 },
   { href: "/cong-dong", label: "Cộng đồng", icon: MessageSquare },
-  { href: "/tai-khoan", label: "Tài khoản", icon: User }
+  { href: "/tai-khoan", label: "Cá nhân", icon: User }
 ];
 
 export function MobileNav() {
@@ -19,9 +19,10 @@ export function MobileNav() {
   return (
     <nav
       aria-label="Điều hướng chính trên di động"
-      className="fixed inset-x-0 bottom-0 z-50 border-t border-border/80 bg-background/95 px-2 pb-[max(0.35rem,env(safe-area-inset-bottom))] pt-1.5 backdrop-blur-xl md:hidden"
+      className="fixed inset-x-0 bottom-0 z-50 border-t border-[color-mix(in_oklch,var(--foreground)_10%,transparent)] bg-[color-mix(in_srgb,var(--background)_95%,transparent)] backdrop-blur-xl md:hidden shadow-[0_-4px_12px_rgba(120,53,15,0.04)]"
+      style={{ paddingBottom: "max(0.35rem, env(safe-area-inset-bottom))" }}
     >
-      <div className="grid grid-cols-5 gap-1">
+      <div className="flex items-center justify-around h-16 px-2">
         {items.map((item) => {
           const Icon = item.icon;
           const active = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
@@ -33,22 +34,16 @@ export function MobileNav() {
               aria-current={active ? "page" : undefined}
               aria-label={item.label}
               className={cn(
-                "relative flex min-h-[3.5rem] min-w-12 flex-col items-center justify-center gap-1 rounded-xl px-2 py-1 text-[11px] font-semibold transition-all duration-200 motion-reduce:transition-none",
-                "text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-                "active:scale-95",
+                "flex flex-col items-center justify-center gap-0.5 transition-all duration-200 active:scale-95",
+                "text-[11px] font-semibold",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                 active
-                  ? "bg-card text-foreground shadow-sm"
-                  : "hover:text-foreground"
+                  ? "bg-primary text-primary-foreground rounded-full px-4 py-1"
+                  : "text-muted-foreground hover:text-foreground rounded-full px-2 py-1"
               )}
             >
-              {active ? (
-                <span
-                  className="absolute inset-x-2 -top-0.5 h-0.5 rounded-full bg-accent transition-all duration-200 motion-reduce:transition-none"
-                  aria-hidden="true"
-                />
-              ) : null}
               <Icon aria-hidden="true" className="size-5" />
-              <span>{item.label}</span>
+              <span style={{ fontFamily: "var(--font-label)" }}>{item.label}</span>
             </Link>
           );
         })}
