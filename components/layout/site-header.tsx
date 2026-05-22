@@ -3,11 +3,10 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { BookOpen, Crown, Home, Menu, Search } from "lucide-react";
+import { Show, SignInButton, SignUpButton, UserButton, useUser } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ThemeSwitcher } from "@/components/theme/theme-switcher";
-import { UserMenu } from "@/components/layout/user-menu";
-import type { Session } from "next-auth";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -17,8 +16,11 @@ const navItems = [
   { href: "/cong-dong", label: "Cộng đồng", icon: Menu }
 ];
 
-export function SiteHeader({ session }: { session: Session | null }) {
+export function SiteHeader() {
   const pathname = usePathname();
+  const { user } = useUser();
+  const clerkEmail = user?.primaryEmailAddress?.emailAddress?.toLowerCase() ?? "";
+  const isClerkAdmin = clerkEmail === "nhatanhvo741@gmail.com";
 
   return (
     <header className="sticky top-0 z-30 border-b border-[color-mix(in_oklch,var(--foreground)_10%,transparent)] bg-[color-mix(in_srgb,var(--background)_80%,transparent)] backdrop-blur-md shadow-sm">
@@ -41,8 +43,8 @@ export function SiteHeader({ session }: { session: Session | null }) {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "relative btn btn-ghost btn-sm rounded-full px-3 text-foreground/70 hover:text-foreground",
-                  active && "text-foreground after:absolute after:bottom-0 after:left-1/2 after:h-1 after:w-1 after:-translate-x-1/2 after:rounded-full after:bg-primary"
+                  "btn btn-ghost btn-sm rounded-full px-3 text-foreground/70 hover:text-foreground",
+                  active && "text-foreground"
                 )}
               >
                 <Icon aria-hidden="true" className="size-4" />
@@ -65,18 +67,22 @@ export function SiteHeader({ session }: { session: Session | null }) {
         </form>
 
         <div className="flex items-center gap-2">
-          {session?.user ? (
-            <UserMenu session={session} />
-          ) : (
-            <>
-              <Button asChild variant="ghost" size="sm" className="rounded-full">
-                <Link href="/dang-nhap">Đăng nhập</Link>
-              </Button>
-              <Button asChild size="sm" className="rounded-full">
-                <Link href="/dang-ky">Đăng ký</Link>
-              </Button>
-            </>
-          )}
+          {isClerkAdmin ? (
+            <Button asChild variant="ghost" size="sm" className="rounded-full">
+              <Link href="/admin">Admin</Link>
+            </Button>
+          ) : null}
+          <Show when="signed-out">
+            <SignInButton mode="modal">
+              <Button variant="ghost" size="sm" className="rounded-full">Dang nhap</Button>
+            </SignInButton>
+            <SignUpButton mode="modal">
+              <Button size="sm" className="rounded-full">Dang ky</Button>
+            </SignUpButton>
+          </Show>
+          <Show when="signed-in">
+            <UserButton />
+          </Show>
           <ThemeSwitcher />
         </div>
       </div>
@@ -93,9 +99,12 @@ export function SiteHeader({ session }: { session: Session | null }) {
         >
           Tiểu thuyết Audio
         </Link>
-        <Link href="/tim-kiem" aria-label="Search" className="p-2 hover:bg-[color-mix(in_srgb,var(--foreground)_6%,transparent)] rounded-full transition-colors">
-          <Search className="size-5" />
-        </Link>
+        <div className="flex items-center gap-1">
+          <Link href="/tim-kiem" aria-label="Search" className="p-2 hover:bg-[color-mix(in_srgb,var(--foreground)_6%,transparent)] rounded-full transition-colors">
+            <Search className="size-5" />
+          </Link>
+          <ThemeSwitcher />
+        </div>
       </div>
     </header>
   );

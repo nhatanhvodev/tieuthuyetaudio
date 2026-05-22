@@ -1,7 +1,7 @@
 @import "tailwindcss";
 @plugin "daisyui" {
   themes:
-    thu-am-sac --default,
+    default --default,
     light,
     dark --prefersdark,
     cupcake,
@@ -33,10 +33,13 @@
     winter,
     dim,
     nord,
-    sunset;
+    sunset,
+    caramellatte,
+    abyss,
+    silk;
 }
 
-/* ── Stitch Layout Tokens (always applied regardless of theme) ── */
+/* Stitch Layout Tokens (always applied regardless of theme) */
 :root {
   --font-display: "Be Vietnam Pro", sans-serif;
   --font-headline: "Be Vietnam Pro", sans-serif;
@@ -55,13 +58,18 @@
   --spacing-margin-desktop: 80px;
   --spacing-section-gap: 64px;
 
+  --mobile-nav-height: 4.25rem;
+  --mini-player-height: 4.9rem;
+  --mini-player-gap: 0.75rem;
+  --app-bottom-space: calc(var(--mobile-nav-height) + var(--mini-player-height) + var(--mini-player-gap));
+
   --shadow-soft: 0 4px 12px rgba(120, 53, 15, 0.04);
   --shadow-card: 0 2px 8px rgba(120, 53, 15, 0.06);
   --shadow-card-hover: 0 8px 24px rgba(120, 53, 15, 0.1);
 }
 
-/* ── thu-am-sac DaisyUI Color Tokens ── */
-[data-theme="thu-am-sac"] {
+/* default DaisyUI Color Tokens */
+[data-theme="default"] {
   --color-primary: #8d4b00;
   --color-primary-content: #ffffff;
   --color-secondary: #944a23;
@@ -84,7 +92,7 @@
   --color-error-content: #ffffff;
 }
 
-/* ── CSS Variables mapped to DaisyUI ── */
+/* CSS Variables mapped to DaisyUI */
 :root {
   --background: var(--color-base-100, #fff9ec);
   --foreground: var(--color-base-content, #201c02);
@@ -97,12 +105,16 @@
   --secondary: var(--color-secondary, #944a23);
   --secondary-foreground: var(--color-secondary-content, #ffffff);
   --muted: var(--color-base-200, #f3e8bd);
-  --muted-foreground: var(--color-neutral, #554336);
+  --muted-foreground: color-mix(in oklch, var(--foreground) 62%, var(--background));
   --accent: var(--color-accent, #fbbf24);
   --accent-foreground: var(--color-accent-content, #1f1300);
   --surface-1: color-mix(in srgb, var(--background) 92%, var(--foreground));
   --surface-2: color-mix(in srgb, var(--background) 82%, var(--foreground));
   --surface-3: color-mix(in srgb, var(--primary) 8%, var(--background));
+  --player-shell: color-mix(in srgb, var(--background) 90%, var(--foreground));
+  --player-panel: color-mix(in srgb, var(--background) 82%, var(--foreground));
+  --player-panel-soft: color-mix(in srgb, var(--background) 86%, var(--primary) 10%);
+  --player-border: color-mix(in oklch, var(--foreground) 12%, transparent);
   --destructive: var(--color-error, #ba1a1a);
   --destructive-foreground: var(--color-error-content, #ffffff);
   --border: color-mix(in oklch, var(--foreground) 15%, transparent);
@@ -214,3 +226,4 @@ select {
     scrollbar-width: none;
   }
 }
+

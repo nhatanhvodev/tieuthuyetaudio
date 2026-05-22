@@ -64,7 +64,7 @@ export default async function AdminEpisodesPage({ searchParams }: { searchParams
         <p className="admin-subtle mt-1 text-sm">Tạo và kiểm soát danh sách tập audio theo từng truyện.</p>
       </div>
 
-      <EpisodeForm series={series} />
+      <EpisodeForm series={series} initialSeriesId={seriesId || undefined} />
 
       <div className="admin-panel rounded-2xl p-4">
         <form action="/admin/tap" className="flex flex-wrap items-center gap-2">

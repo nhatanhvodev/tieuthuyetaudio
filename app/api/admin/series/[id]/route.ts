@@ -9,10 +9,39 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   const { id } = await params;
 
   const parsed = seriesInputSchema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: "Truyện không hợp lệ" }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Truyen khong hop le" }, { status: 400 });
   const data = parsed.data;
+  const resolvedStatus = data.seriesType === "ONE_SHOT" ? "COMPLETED" : data.status;
+
+  const current = await db.series.findUnique({
+    where: { id },
+    select: { id: true, episodeCount: true }
+  });
+  if (!current) return NextResponse.json({ error: "Khong tim thay truyen" }, { status: 404 });
+
+  if (data.seriesType === "ONE_SHOT" && current.episodeCount > 1) {
+    return NextResponse.json(
+      { error: "Truyen tap ngan chi duoc co 1 tap. Hay xoa bot tap truoc khi doi loai." },
+      { status: 400 }
+    );
+  }
 
   const series = await db.$transaction(async (tx) => {
+    if (data.seriesType === "ONE_SHOT") {
+      const firstEpisode = await tx.episode.findFirst({
+        where: { seriesId: id },
+        orderBy: { episodeNumber: "asc" },
+        select: { id: true }
+      });
+
+      if (firstEpisode) {
+        await tx.episode.update({
+          where: { id: firstEpisode.id },
+          data: { episodeNumber: 1 }
+        });
+      }
+    }
+
     await tx.series.update({
       where: { id },
       data: {
@@ -20,7 +49,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         slug: data.slug,
         description: data.description || null,
         producer: data.producer || null,
-        status: data.status,
+        status: resolvedStatus,
+        seriesType: data.seriesType,
         coverUrl: data.coverUrl || null,
         categories: {
           deleteMany: {},
@@ -49,7 +79,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     payload: {
       title: data.title,
       slug: data.slug,
-      status: data.status,
+      status: resolvedStatus,
+      seriesType: data.seriesType,
       categoryIds: data.categoryIds
     }
   });

@@ -66,9 +66,10 @@ export function ContinueListeningShelf({
                   <p className="truncate text-sm font-semibold">{item.series.title}</p>
                   <p className="truncate text-xs text-muted-foreground">{item.episode.title}</p>
                 </div>
-                <Button asChild size="icon" aria-label={`Tiep tuc nghe ${item.episode.title}`}>
+                <Button asChild size="sm" className="shrink-0" aria-label={`Tiep tuc nghe ${item.episode.title}`}>
                   <Link href={episodeHref}>
-                    <Play aria-hidden="true" />
+                    <Play aria-hidden="true" className="size-3.5" />
+                    Nghe tiep
                   </Link>
                 </Button>
               </div>

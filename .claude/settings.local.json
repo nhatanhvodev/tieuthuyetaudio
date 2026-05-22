@@ -24,7 +24,8 @@
       "PowerShell(npx -y stitch-design-cli project get 18068027846235237633 --json 2>&1)",
       "Bash(curl *)",
       "mcp__stitch__get_screen",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Bash(Select-Object -First 20)"
     ]
   }
 }

@@ -13,6 +13,7 @@ type SeriesRow = {
   title: string;
   slug: string;
   status: "ONGOING" | "COMPLETED";
+  seriesType: "MULTI_EPISODE" | "ONE_SHOT";
   episodeCount: number;
   categories: string[];
 };
@@ -94,6 +95,7 @@ export function SeriesTable({ rows }: { rows: SeriesRow[] }) {
               </TableHead>
               <TableHead>Tên</TableHead>
               <TableHead>Slug</TableHead>
+              <TableHead>Loại</TableHead>
               <TableHead>Trạng thái</TableHead>
               <TableHead>Tập</TableHead>
               <TableHead>Thể loại</TableHead>
@@ -108,6 +110,7 @@ export function SeriesTable({ rows }: { rows: SeriesRow[] }) {
                 </TableCell>
                 <TableCell className="font-medium text-slate-900">{item.title}</TableCell>
                 <TableCell>{item.slug}</TableCell>
+                <TableCell>{item.seriesType === "ONE_SHOT" ? "Tập ngắn" : "Nhiều tập"}</TableCell>
                 <TableCell>{item.status === "COMPLETED" ? "Hoàn thành" : "Đang cập nhật"}</TableCell>
                 <TableCell>{item.episodeCount}</TableCell>
                 <TableCell className="max-w-xs">{item.categories.join(", ") || "-"}</TableCell>

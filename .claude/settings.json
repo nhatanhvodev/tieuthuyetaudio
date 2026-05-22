@@ -4,7 +4,13 @@
       "PowerShell(git add app/api/community/ app/cong-dong/page.tsx components/community/ prisma/schema.prisma)",
       "PowerShell(Set-Location d:\\\\tieuthuyetaudio; npx prisma generate 2>&1; if \\($LASTEXITCODE -eq 0\\) { Write-Host \"generate OK\" } else { Write-Host \"generate FAILED: $LASTEXITCODE\" })",
       "PowerShell(Set-Location d:\\\\tieuthuyetaudio; npx prisma db push 2>&1; if \\($LASTEXITCODE -eq 0\\) { Write-Host \"db push OK\" } else { Write-Host \"db push FAILED: $LASTEXITCODE\" })",
-      "mcp__plugin_ecc_playwright__browser_navigate"
+      "mcp__plugin_ecc_playwright__browser_navigate",
+      "PowerShell(Write-Host \"=== DNS servers configured ===\"; Get-DnsClientServerAddress -AddressFamily IPv4 | Where-Object { $_.ServerAddresses.Count -gt 0 } | Select-Object InterfaceAlias, ServerAddresses | Format-Table -AutoSize; Write-Host \"`n=== nslookup via different DNS ===\"; nslookup chatgpt.com 2>&1; nslookup chatgpt.com 8.8.8.8 2>&1; nslookup chatgpt.com 1.1.1.1 2>&1)",
+      "Bash(ping -n 2 104.18.32.47)",
+      "Bash(ping -n 2 172.64.155.209)",
+      "Bash(ping -n 2 cloudflare.com)",
+      "Bash(ping -n 2 discord.com)",
+      "Bash(ping -n 2 1.1.1.1)"
     ]
   }
 }

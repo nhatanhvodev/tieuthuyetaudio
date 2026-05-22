@@ -1,5 +1,5 @@
 import { requireUser } from "@/lib/auth";
-import { getAccountOverview, getContinueListeningHistory, getFollowedSeries, getListeningHistory } from "@/lib/account/queries";
+import { getAccountOverview, getFollowedSeries, getListeningHistory } from "@/lib/account/queries";
 import { AccountPageClient } from "@/components/account/account-page-client";
 
 export const dynamic = "force-dynamic";
@@ -8,11 +8,10 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
   const session = await requireUser();
   const { tab } = await searchParams;
 
-  const [account, history, follows, continueListening] = await Promise.all([
+  const [account, history, follows] = await Promise.all([
     getAccountOverview(session.user.id),
     getListeningHistory(session.user.id),
-    getFollowedSeries(session.user.id),
-    getContinueListeningHistory(session.user.id, 8)
+    getFollowedSeries(session.user.id)
   ]);
 
   if (!account) {
@@ -29,7 +28,6 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
       account={account}
       history={history}
       follows={follows}
-      continueListening={continueListening}
     />
   );
 }

@@ -1,14 +1,28 @@
 "use client";
 
-import { useEffect, useState, type MouseEvent } from "react";
-import { BookmarkPlus, Pause, Play, RotateCcw, RotateCw, Volume2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+  BookmarkPlus,
+  ChevronDown,
+  ChevronUp,
+  Clock3,
+  ListMusic,
+  Pause,
+  Play,
+  RotateCcw,
+  RotateCw,
+  SlidersHorizontal,
+  SkipBack,
+  SkipForward,
+  Volume2
+} from "lucide-react";
 import { BookmarkList } from "@/components/player/bookmark-list";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { buildPlayerEventPayload, emitAnalyticsPayload } from "@/lib/analytics/events";
 import type { BookmarkTimelineItem } from "@/lib/bookmarks/validators";
 import { featureFlags } from "@/lib/features";
-import { formatTimeCompact, formatTimeSmart } from "@/lib/format";
+import { formatTimeSmart } from "@/lib/format";
 import { usePlayerStore, type PlayerEpisode } from "@/stores/player-store";
 
 function sortBookmarks(bookmarks: BookmarkTimelineItem[]) {
@@ -39,15 +53,18 @@ export function AudioPlayer({
   const currentQueueIndex = usePlayerStore((state) => state.currentQueueIndex);
   const sleepTimer = usePlayerStore((state) => state.sleepTimer);
   const loadEpisode = usePlayerStore((state) => state.loadEpisode);
+  const setQueue = usePlayerStore((state) => state.setQueue);
   const togglePlay = usePlayerStore((state) => state.togglePlay);
   const requestSeek = usePlayerStore((state) => state.requestSeek);
   const setRate = usePlayerStore((state) => state.setRate);
   const setVolume = usePlayerStore((state) => state.setVolume);
   const setAutoPlayNext = usePlayerStore((state) => state.setAutoPlayNext);
   const playNextInQueue = usePlayerStore((state) => state.playNextInQueue);
+  const playPrevInQueue = usePlayerStore((state) => state.playPrevInQueue);
   const startSleepTimerMinutes = usePlayerStore((state) => state.startSleepTimerMinutes);
   const startSleepTimerEndOfEpisode = usePlayerStore((state) => state.startSleepTimerEndOfEpisode);
   const cancelSleepTimer = usePlayerStore((state) => state.cancelSleepTimer);
+
   const [bookmarks, setBookmarks] = useState(() => sortBookmarks(initialBookmarks));
   const [bookmarkNote, setBookmarkNote] = useState("");
   const [bookmarkStatus, setBookmarkStatus] = useState("");
@@ -55,12 +72,19 @@ export function AudioPlayer({
   const [isSavingBookmark, setIsSavingBookmark] = useState(false);
   const [savingBookmarkId, setSavingBookmarkId] = useState<string | null>(null);
   const [deletingBookmarkId, setDeletingBookmarkId] = useState<string | null>(null);
+  const [advancedOpen, setAdvancedOpen] = useState(false);
 
   useEffect(() => {
     const nextQueue = queue?.length ? queue : [episode];
     const queueIndex = Math.max(0, nextQueue.findIndex((item) => item.episodeId === episode.episodeId));
+
+    if (current?.episodeId === episode.episodeId) {
+      setQueue(nextQueue, episode.episodeId);
+      return;
+    }
+
     loadEpisode(episode, { queue: nextQueue, queueIndex });
-  }, [episode, queue, loadEpisode]);
+  }, [episode, queue, loadEpisode, setQueue, current?.episodeId]);
 
   const activeEpisode = current ?? episode;
   const resolvedQueue = queueState.length ? queueState : queue?.length ? queue : [episode];
@@ -68,8 +92,10 @@ export function AudioPlayer({
     currentQueueIndex >= 0
       ? currentQueueIndex
       : resolvedQueue.findIndex((item) => item.episodeId === activeEpisode.episodeId);
+  const prevEpisode = resolvedQueueIndex > 0 ? resolvedQueue[resolvedQueueIndex - 1] ?? null : null;
   const nextEpisode = resolvedQueueIndex >= 0 ? resolvedQueue[resolvedQueueIndex + 1] ?? null : null;
-  const progressPercent = progress.durationSeconds > 0 ? Math.max(0, Math.min(100, (progress.currentSeconds / progress.durationSeconds) * 100)) : 0;
+  const progressPercent =
+    progress.durationSeconds > 0 ? Math.max(0, Math.min(100, (progress.currentSeconds / progress.durationSeconds) * 100)) : 0;
 
   useEffect(() => {
     const handleKeyboard = (event: KeyboardEvent) => {
@@ -290,215 +316,284 @@ export function AudioPlayer({
 
   const currentTimeLabel = formatTimeSmart(progress.currentSeconds, progress.durationSeconds);
   const durationLabel = formatTimeSmart(progress.durationSeconds, progress.durationSeconds);
-  const shouldShowHours = progress.durationSeconds >= 3600;
+  const remainingLabel = formatTimeSmart(Math.max(0, progress.durationSeconds - progress.currentSeconds), progress.durationSeconds);
+  const hasDuration = progress.durationSeconds > 0;
+  const currentTimeDisplay = hasDuration ? currentTimeLabel : "Đang tải...";
+  const durationDisplay = hasDuration ? durationLabel : "Đang tải...";
+  const remainingDisplay = hasDuration ? remainingLabel : "Đang tải...";
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-[color-mix(in_oklch,var(--foreground)_8%,transparent)] bg-[color-mix(in_srgb,var(--background)_95%,transparent)] p-4 shadow-[0_24px_60px_rgba(120,53,15,0.08)] md:p-6">
-      <div className="grid gap-5 md:grid-cols-[220px_1fr]">
-        <div className="relative aspect-square overflow-hidden rounded-xl bg-secondary">
-          {activeEpisode.coverUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={activeEpisode.coverUrl}
-              alt=""
-              loading="lazy"
-              decoding="async"
-              className={`absolute inset-0 size-full object-cover transition-transform duration-500 ${isPlaying ? "animate-[spin_16s_linear_infinite]" : ""}`}
-            />
-          ) : null}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+    <section className="relative overflow-hidden rounded-[1.6rem] border border-[var(--player-border)] bg-[radial-gradient(circle_at_0%_0%,color-mix(in_srgb,var(--accent)_22%,transparent),transparent_34%),radial-gradient(circle_at_100%_100%,color-mix(in_srgb,var(--primary)_16%,transparent),transparent_40%),var(--player-shell)] p-4 shadow-[0_26px_55px_rgba(120,53,15,0.11)] md:p-6">
+      <div className="relative grid gap-6 lg:grid-cols-[240px_1fr]">
+        <div className="relative overflow-hidden rounded-2xl border border-[var(--player-border)] bg-[var(--player-panel)] p-3">
+          <div className="relative aspect-square overflow-hidden rounded-xl bg-secondary/20">
+            {activeEpisode.coverUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={activeEpisode.coverUrl}
+                alt=""
+                loading="lazy"
+                decoding="async"
+                className={`absolute inset-0 size-full object-cover transition-transform duration-500 ${isPlaying ? "animate-[spin_16s_linear_infinite]" : ""}`}
+              />
+            ) : null}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent" />
+          </div>
+          <div className="mt-3 grid gap-2 text-xs">
+            <div className="inline-flex w-fit items-center gap-1 rounded-full bg-primary/12 px-2.5 py-1 font-semibold text-primary">
+              Đang phát
+            </div>
+            <p className="text-muted-foreground">Còn lại: {remainingDisplay}</p>
+            <p className="text-muted-foreground">Thời lượng: {durationDisplay}</p>
+          </div>
         </div>
-        <div className="flex min-w-0 flex-col justify-center">
-          <p className="text-sm text-muted-foreground">{activeEpisode.seriesTitle}</p>
-          <p className="mt-1 text-2xl font-black md:text-3xl">{activeEpisode.title}</p>
 
-          {/* Progress bar area */}
-          <div className="mt-6 space-y-1.5">
+        <div className="min-w-0">
+          <p className="text-sm text-muted-foreground">{activeEpisode.seriesTitle}</p>
+          <h2 className="mt-1 text-2xl font-black leading-tight md:text-3xl">{activeEpisode.title}</h2>
+
+          <div className="mt-5 rounded-2xl border border-[var(--player-border)] bg-[var(--player-panel)] px-3 py-3 md:px-4">
             <input
               aria-label="Tiến trình nghe"
               type="range"
               min={0}
-              max={progress.durationSeconds || 0}
+              max={hasDuration ? progress.durationSeconds : 1}
               value={progress.currentSeconds}
               onChange={(event) => requestSeek(Number(event.target.value))}
-              className="h-1.5 w-full cursor-pointer accent-primary rounded-full"
+              disabled={!hasDuration}
+              className="h-2 w-full cursor-pointer accent-primary"
             />
-            <div className="flex items-center justify-between">
-              <span className="text-xs tabular-nums text-muted-foreground">{currentTimeLabel}</span>
-              <span className="text-xs tabular-nums text-muted-foreground">-{formatTimeSmart(Math.max(0, progress.durationSeconds - progress.currentSeconds), progress.durationSeconds)}</span>
+            <div className="mt-2 flex items-center justify-between text-xs tabular-nums text-muted-foreground">
+              <span>{currentTimeDisplay}</span>
+              <span>{hasDuration ? `${Math.round(progressPercent)}%` : "..."}</span>
+              <span>{durationDisplay}</span>
             </div>
           </div>
 
-          {/* Controls */}
-          <div className="mt-4 flex flex-wrap items-center gap-2 md:gap-3">
-            <Button
-              type="button"
-              variant="secondary"
-              size="icon"
-              className="rounded-full transition-all duration-200"
-              onClick={() => seek(-10)}
-              aria-label="Lùi 10 giây"
-            >
-              <RotateCcw aria-hidden="true" className="size-4" />
-              <span className="sr-only">-10s</span>
-            </Button>
-            <Button
-              type="button"
-              variant="secondary"
-              size="icon"
-              className="rounded-full transition-all duration-200"
-              onClick={() => seek(-30)}
-              aria-label="Lùi 30 giây"
-            >
-              <RotateCcw aria-hidden="true" className="size-4" />
-              <span className="text-[9px] font-bold">30</span>
-            </Button>
-            <Button
-              type="button"
-              size="icon"
-              className="h-12 w-12 rounded-full bg-primary text-primary-foreground shadow-lg transition-all duration-200 hover:scale-105 hover:brightness-90 hover:shadow-xl motion-reduce:hover:scale-100"
-              onClick={togglePlay}
-              aria-label={isPlaying ? "Tạm dừng" : "Phát"}
-            >
-              {isPlaying ? <Pause className="size-6" /> : <Play className="size-6 translate-x-[1px]" />}
-            </Button>
-            <Button
-              type="button"
-              variant="secondary"
-              size="icon"
-              className="rounded-full transition-all duration-200"
-              onClick={() => seek(30)}
-              aria-label="Tiến 30 giây"
-            >
-              <RotateCw aria-hidden="true" className="size-4" />
-              <span className="text-[9px] font-bold">30</span>
-            </Button>
-            <Button
-              type="button"
-              variant="secondary"
-              size="icon"
-              className="rounded-full transition-all duration-200"
-              onClick={() => seek(10)}
-              aria-label="Tiến 10 giây"
-            >
-              <RotateCw aria-hidden="true" className="size-4" />
-              <span className="sr-only">+10s</span>
-            </Button>
-            <select
-              aria-label="Tốc độ phát"
-              value={rate}
-              onChange={(event) => setRate(Number(event.target.value))}
-              className="select select-bordered h-10 rounded-full border-[color-mix(in_oklch,var(--foreground)_10%,transparent)] bg-secondary px-3 text-sm text-foreground"
-            >
-              {[0.75, 1, 1.25, 1.5, 2].map((speed) => (
-                <option key={speed} value={speed}>{speed}x</option>
-              ))}
-            </select>
-            <label className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Volume2 aria-hidden="true" className="size-4" />
-              <select
-                aria-label="Âm lượng"
-                value={volume}
-                onChange={(event) => setVolume(Number(event.target.value))}
-                className="select select-bordered h-10 rounded-full border-[color-mix(in_oklch,var(--foreground)_10%,transparent)] bg-secondary px-3 text-sm text-foreground"
+          <div className="mt-5 rounded-2xl border border-[var(--player-border)] bg-[var(--player-panel)] p-3 md:p-4">
+            <div className="flex flex-wrap items-center justify-center gap-2.5 md:gap-3.5">
+              <Button
+                type="button"
+                variant="secondary"
+                size="icon"
+                className="h-10 w-10 rounded-full"
+                onClick={() => playPrevInQueue()}
+                disabled={!prevEpisode}
+                aria-label="Tập trước"
               >
-                <option value={0.25}>25%</option>
-                <option value={0.5}>50%</option>
-                <option value={0.75}>75%</option>
-                <option value={1}>100%</option>
-              </select>
-            </label>
+                <SkipBack aria-hidden="true" className="size-4" />
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                size="icon"
+                className="h-10 w-10 rounded-full"
+                onClick={() => seek(-10)}
+                aria-label="Lùi 10 giây"
+                disabled={!hasDuration}
+              >
+                <RotateCcw aria-hidden="true" className="size-4" />
+              </Button>
+              <Button
+                type="button"
+                size="icon"
+                className="h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-[0_12px_28px_rgba(120,53,15,0.28)] transition hover:scale-105 hover:brightness-95 focus-visible:ring-2 focus-visible:ring-primary/50 motion-reduce:hover:scale-100"
+                onClick={togglePlay}
+                aria-label={isPlaying ? "Tạm dừng" : "Phát"}
+              >
+                {isPlaying ? <Pause className="size-6" /> : <Play className="size-6 translate-x-[1px]" />}
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                size="icon"
+                className="h-10 w-10 rounded-full"
+                onClick={() => seek(10)}
+                aria-label="Tiến 10 giây"
+                disabled={!hasDuration}
+              >
+                <RotateCw aria-hidden="true" className="size-4" />
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                size="icon"
+                className="h-10 w-10 rounded-full"
+                onClick={() => playNextInQueue()}
+                disabled={!nextEpisode}
+                aria-label="Tập tiếp theo"
+              >
+                <SkipForward aria-hidden="true" className="size-4" />
+              </Button>
+            </div>
+            <div className="mt-3 flex flex-wrap items-center justify-center gap-2.5 text-xs text-muted-foreground">
+              <Button type="button" variant="ghost" size="sm" className="h-8 rounded-full px-3" onClick={() => seek(-30)} disabled={!hasDuration}>
+                <RotateCcw aria-hidden="true" className="size-3.5" /> 30s
+              </Button>
+              <Button type="button" variant="ghost" size="sm" className="h-8 rounded-full px-3" onClick={() => seek(30)} disabled={!hasDuration}>
+                <RotateCw aria-hidden="true" className="size-3.5" /> 30s
+              </Button>
+              <span className="rounded-full bg-primary/10 px-2.5 py-1 font-semibold text-primary">{rate}x</span>
+              <span className="rounded-full bg-secondary/20 px-2.5 py-1">Âm lượng {Math.round(volume * 100)}%</span>
+            </div>
           </div>
 
-          {featureFlags.continuousPlay ? (
-            <div className="mt-4 flex flex-wrap items-center gap-3 rounded-xl border border-[color-mix(in_oklch,var(--foreground)_6%,transparent)] bg-[color-mix(in_srgb,var(--secondary)_20%,var(--background))] p-3">
-              <label className="inline-flex items-center gap-2 text-sm text-muted-foreground">
-                <input
-                  aria-label="Auto-play"
-                  type="checkbox"
-                  checked={autoPlayNext}
-                  onChange={(event) => setAutoPlayNext(event.target.checked)}
-                />
-                Auto-play tập tiếp theo
-              </label>
-              <Button type="button" variant="outline" size="sm" className="text-foreground" onClick={() => playNextInQueue()} disabled={!nextEpisode}>
-                Play next
-              </Button>
-              {nextEpisode ? <p className="text-xs text-muted-foreground">Tiếp theo: {nextEpisode.title}</p> : null}
-            </div>
-          ) : null}
-
-          {featureFlags.sleepTimer ? (
-            <div className="mt-4 rounded-xl border border-[color-mix(in_oklch,var(--foreground)_6%,transparent)] bg-[color-mix(in_srgb,var(--secondary)_20%,var(--background))] p-3">
-              <p className="text-xs text-muted-foreground">{sleepTimerSummary()}</p>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {[10, 20, 30, 45].map((minutes) => (
-                  <Button key={minutes} type="button" variant="outline" size="sm" className="text-foreground" onClick={() => startSleepTimerMinutes(minutes)}>
-                    {minutes} phút
-                  </Button>
-                ))}
-                <Button type="button" variant="outline" size="sm" className="text-foreground" onClick={startSleepTimerEndOfEpisode}>
-                  Đến hết tập
-                </Button>
-                <Button type="button" variant="ghost" size="sm" className="text-muted-foreground hover:bg-secondary" onClick={cancelSleepTimer}>
-                  Hủy hẹn giờ
-                </Button>
-              </div>
-            </div>
-          ) : null}
-
-          {featureFlags.bookmarks ? (
-            <div className="mt-4 rounded-xl border border-[color-mix(in_oklch,var(--foreground)_6%,transparent)] bg-[color-mix(in_srgb,var(--secondary)_20%,var(--background))] p-3">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <p className="text-sm font-semibold">Mốc nghe và ghi chú</p>
-                  <p className="text-xs text-muted-foreground">Lưu lại đoạn đang nghe để quay lại nhanh hơn.</p>
+          <div className="mt-4 rounded-2xl border border-[var(--player-border)] bg-[var(--player-panel-soft)]">
+            <button
+              type="button"
+              className="flex w-full items-center justify-between px-4 py-3 text-left transition-colors hover:bg-[color-mix(in_srgb,var(--foreground)_4%,transparent)]"
+              onClick={() => setAdvancedOpen((value) => !value)}
+              aria-expanded={advancedOpen}
+            >
+              <div className="flex items-start gap-2.5">
+                <div className="rounded-lg bg-primary/10 p-1.5 text-primary">
+                  <SlidersHorizontal className="size-4" />
                 </div>
-                <Button
-                  type="button"
-                  size="sm"
-                  onClick={createBookmark}
-                  disabled={!canManageBookmarks || isSavingBookmark}
-                >
-                  <BookmarkPlus aria-hidden="true" />
-                  Lưu tại {currentTimeLabel}
-                </Button>
+                <div>
+                  <p className="text-sm font-semibold">Tùy chỉnh nâng cao</p>
+                  <p className="text-xs text-muted-foreground">Tốc độ, âm lượng, auto-play, hẹn giờ, bookmark</p>
+                </div>
               </div>
+              {advancedOpen ? <ChevronUp className="size-4 text-muted-foreground" /> : <ChevronDown className="size-4 text-muted-foreground" />}
+            </button>
 
-              {canManageBookmarks ? (
-                <>
-                  <label className="mt-3 block text-sm font-medium" htmlFor="bookmark-note">
-                    Ghi chú tùy chọn
+            <div
+              className={`overflow-hidden transition-[max-height,opacity] duration-300 ease-out ${
+                advancedOpen ? "max-h-[1200px] opacity-100" : "max-h-0 opacity-0"
+              }`}
+            >
+              <div className="grid gap-3 border-t border-[var(--player-border)] px-4 py-4">
+                <div className="grid gap-3 md:grid-cols-2">
+                  <label className="grid gap-1 text-sm">
+                    <span className="inline-flex items-center gap-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                      <ListMusic className="size-3.5" />
+                      Tốc độ
+                    </span>
+                    <select
+                      aria-label="Tốc độ phát"
+                      value={rate}
+                      onChange={(event) => setRate(Number(event.target.value))}
+                      className="h-11 rounded-xl border border-[var(--player-border)] bg-[var(--player-panel)] px-3"
+                    >
+                      {[0.75, 1, 1.25, 1.5, 2].map((speed) => (
+                        <option key={speed} value={speed}>{speed}x</option>
+                      ))}
+                    </select>
                   </label>
-                  <Textarea
-                    id="bookmark-note"
-                    value={bookmarkNote}
-                    onChange={(event) => setBookmarkNote(event.target.value)}
-                    placeholder="Ví dụ: bắt đầu twist, giới thiệu nhân vật, cần nghe lại"
-                    maxLength={500}
-                    className="mt-2 min-h-20"
-                  />
 
-                  {isLoadingBookmarks ? <p className="mt-3 text-sm text-muted-foreground">Đang tải mốc nghe...</p> : null}
-                  <BookmarkList
-                    bookmarks={bookmarks}
-                    currentSeconds={progress.currentSeconds}
-                    deletingBookmarkId={deletingBookmarkId}
-                    savingBookmarkId={savingBookmarkId}
-                    onDelete={deleteBookmark}
-                    onJump={(second) => requestSeek(second)}
-                    onUpdate={updateBookmark}
-                  />
-                </>
-              ) : (
-                <p className="mt-3 text-sm text-muted-foreground">Đăng nhập để lưu mốc nghe và đồng bộ ghi chú giữa các lần nghe.</p>
-              )}
+                  <label className="grid gap-1 text-sm">
+                    <span className="inline-flex items-center gap-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                      <Volume2 className="size-3.5" />
+                      Âm lượng
+                    </span>
+                    <div className="flex items-center gap-2 rounded-xl border border-[var(--player-border)] bg-[var(--player-panel)] px-3 py-2">
+                      <Volume2 aria-hidden="true" className="size-4 text-muted-foreground" />
+                      <input
+                        aria-label="Âm lượng"
+                        type="range"
+                        min={0}
+                        max={1}
+                        step={0.05}
+                        value={volume}
+                        onChange={(event) => setVolume(Number(event.target.value))}
+                        className="h-2 w-full cursor-pointer accent-primary"
+                      />
+                    </div>
+                  </label>
+                </div>
 
-              <p aria-live="polite" className="mt-3 min-h-5 text-xs text-muted-foreground">
-                {bookmarkStatus}
-              </p>
+                {featureFlags.continuousPlay ? (
+                  <div className="rounded-xl border border-[var(--player-border)] bg-[var(--player-panel)] p-3">
+                    <label className="inline-flex items-center gap-2 text-sm text-muted-foreground">
+                      <input
+                        aria-label="Auto-play"
+                        type="checkbox"
+                        checked={autoPlayNext}
+                        onChange={(event) => setAutoPlayNext(event.target.checked)}
+                      />
+                      Auto-play tập tiếp theo
+                    </label>
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                      <Button type="button" variant="outline" size="sm" className="text-foreground" onClick={() => playNextInQueue()} disabled={!nextEpisode}>
+                        Play next
+                      </Button>
+                      {nextEpisode ? <p className="text-xs text-muted-foreground">Tiếp theo: {nextEpisode.title}</p> : null}
+                    </div>
+                  </div>
+                ) : null}
+
+                {featureFlags.sleepTimer ? (
+                  <div className="rounded-xl border border-[var(--player-border)] bg-[var(--player-panel)] p-3">
+                    <p className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                      <Clock3 className="size-3.5" />
+                      {sleepTimerSummary()}
+                    </p>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {[10, 20, 30, 45].map((minutes) => (
+                        <Button key={minutes} type="button" variant="outline" size="sm" className="text-foreground" onClick={() => startSleepTimerMinutes(minutes)}>
+                          {minutes} phút
+                        </Button>
+                      ))}
+                      <Button type="button" variant="outline" size="sm" className="text-foreground" onClick={startSleepTimerEndOfEpisode}>
+                        Đến hết tập
+                      </Button>
+                      <Button type="button" variant="ghost" size="sm" className="text-muted-foreground hover:bg-secondary/20" onClick={cancelSleepTimer}>
+                        Hủy hẹn giờ
+                      </Button>
+                    </div>
+                  </div>
+                ) : null}
+
+                {featureFlags.bookmarks ? (
+                  <div className="rounded-xl border border-[var(--player-border)] bg-[var(--player-panel)] p-3">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-semibold">Mốc nghe và ghi chú</p>
+                        <p className="text-xs text-muted-foreground">Lưu lại đoạn đang nghe để quay lại nhanh hơn.</p>
+                      </div>
+                      <Button type="button" size="sm" onClick={createBookmark} disabled={!canManageBookmarks || isSavingBookmark}>
+                        <BookmarkPlus aria-hidden="true" className="size-4" />
+                        Lưu tại {currentTimeDisplay}
+                      </Button>
+                    </div>
+
+                    {canManageBookmarks ? (
+                      <>
+                        <label className="mt-3 block text-sm font-medium" htmlFor="bookmark-note">
+                          Ghi chú tùy chọn
+                        </label>
+                        <Textarea
+                          id="bookmark-note"
+                          value={bookmarkNote}
+                          onChange={(event) => setBookmarkNote(event.target.value)}
+                          placeholder="Ví dụ: đoạn quan trọng cần nghe lại"
+                          maxLength={500}
+                          className="mt-2 min-h-20"
+                        />
+
+                        {isLoadingBookmarks ? <p className="mt-3 text-sm text-muted-foreground">Đang tải mốc nghe...</p> : null}
+                        <BookmarkList
+                          bookmarks={bookmarks}
+                          currentSeconds={progress.currentSeconds}
+                          deletingBookmarkId={deletingBookmarkId}
+                          savingBookmarkId={savingBookmarkId}
+                          onDelete={deleteBookmark}
+                          onJump={(second) => requestSeek(second)}
+                          onUpdate={updateBookmark}
+                        />
+                      </>
+                    ) : (
+                      <p className="mt-3 text-sm text-muted-foreground">Đăng nhập để lưu mốc nghe và đồng bộ giữa các thiết bị.</p>
+                    )}
+
+                    <p aria-live="polite" className="mt-3 min-h-5 text-xs text-muted-foreground">
+                      {bookmarkStatus}
+                    </p>
+                  </div>
+                ) : null}
+              </div>
             </div>
-          ) : null}
+          </div>
         </div>
       </div>
     </section>

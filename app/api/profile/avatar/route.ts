@@ -1,13 +1,15 @@
-import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
+import { clerkClient } from "@clerk/nextjs/server";
 import { requireUser } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { uploadBufferToSupabaseStorage } from "@/lib/supabase/storage-admin";
 
 export const runtime = "nodejs";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
+const AVATAR_BUCKET = process.env.SUPABASE_STORAGE_AVATAR_BUCKET ?? "avatars";
 const ALLOWED_TYPES = new Set([
   "image/jpeg",
   "image/png",
@@ -50,22 +52,36 @@ export async function POST(request: Request) {
   }
 
   const ext = extFromMime(file.type) || path.extname(file.name).toLowerCase() || ".jpg";
-  const safeName = `${Date.now()}-${randomUUID()}${ext}`;
-  const relativeDir = path.join("uploads", "avatars");
-  const relativePath = path.join(relativeDir, safeName);
-  const absoluteDir = path.join(process.cwd(), "public", relativeDir);
-  const absolutePath = path.join(process.cwd(), "public", relativePath);
-
-  await mkdir(absoluteDir, { recursive: true });
   const arrayBuffer = await file.arrayBuffer();
-  await writeFile(absolutePath, Buffer.from(arrayBuffer));
-
-  const url = `/${relativePath.replaceAll("\\", "/")}`;
+  const safeName = `${Date.now()}-${randomUUID()}${ext}`;
+  const objectPath = path.posix.join("users", session.user.id, safeName);
+  let url: string;
+  try {
+    const uploaded = await uploadBufferToSupabaseStorage({
+      bucket: AVATAR_BUCKET,
+      objectPath,
+      body: arrayBuffer,
+      contentType: file.type || "image/jpeg",
+      cacheControl: "31536000",
+      upsert: false
+    });
+    url = uploaded.publicUrl;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Upload ảnh lên Supabase thất bại.";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
 
   await db.user.update({
     where: { id: session.user.id },
     data: { image: url }
   });
+
+  try {
+    const client = await clerkClient();
+    await client.users.updateUserProfileImage(session.user.clerkId, { file });
+  } catch (error) {
+    console.warn("[profile-avatar] Clerk profile image sync failed", error);
+  }
 
   return NextResponse.json({ ok: true, url });
 }

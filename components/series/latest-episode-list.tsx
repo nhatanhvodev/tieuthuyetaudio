@@ -42,9 +42,9 @@ export function LatestEpisodeList({ episodes, loading }: { episodes: LatestEpiso
   if (!episodes.length) return null;
 
   return (
-    <div className="grid gap-2">
+    <div className="grid min-w-0 gap-2">
       {episodes.map((episode) => (
-        <article key={episode.id} className="flex items-center gap-3 rounded-lg border bg-card/90 p-2.5 transition hover:border-accent/60 hover:bg-card motion-reduce:transition-none">
+        <article key={episode.id} className="flex w-full min-w-0 items-center gap-3 overflow-hidden rounded-lg border bg-card/90 p-2.5 transition hover:border-accent/60 hover:bg-card motion-reduce:transition-none">
           <Link href={`/truyen/${episode.series.slug}`} className="relative flex size-16 shrink-0 items-end overflow-hidden rounded-md bg-secondary" aria-label={episode.series.title}>
             <CoverImage src={episode.series.coverUrl} alt={episode.series.title} sizes="64px" className="absolute inset-0 size-full object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
@@ -61,9 +61,9 @@ export function LatestEpisodeList({ episodes, loading }: { episodes: LatestEpiso
             <Link href={`/truyen/${episode.series.slug}/tap/${episode.episodeNumber}`} className="mt-1 block truncate font-semibold">
               {episode.title}
             </Link>
-            <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
-              <span className="truncate">{episode.series.title}</span>
-              <span className="inline-flex items-center gap-1">
+            <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
+              <span className="max-w-full truncate">{episode.series.title}</span>
+              <span className="inline-flex shrink-0 items-center gap-1">
                 <Headphones aria-hidden="true" className="size-4" />
                 {formatCount(episode.listenCount)}
               </span>

@@ -8,7 +8,6 @@ import { StoryShelf } from "@/components/series/story-shelf";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { safeAuth } from "@/lib/auth";
-import type { Session } from "next-auth";
 import { db } from "@/lib/db";
 import { formatCount, formatDuration, formatStatus } from "@/lib/format";
 import { getHomeShelves, getSeriesBySlug } from "@/lib/series/queries";
@@ -19,7 +18,7 @@ export default async function SeriesDetailPage({ params }: { params: Promise<{ s
   const { slug } = await params;
 
   let series: Awaited<ReturnType<typeof getSeriesBySlug>> = null;
-  let session: Session | null = null;
+  let session: Awaited<ReturnType<typeof safeAuth>> = null;
 
   try {
     session = await safeAuth();

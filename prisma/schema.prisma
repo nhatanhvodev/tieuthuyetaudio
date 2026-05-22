@@ -17,6 +17,11 @@ enum SeriesStatus {
   COMPLETED
 }
 
+enum SeriesType {
+  MULTI_EPISODE
+  ONE_SHOT
+}
+
 model User {
   id                 String              @id @default(cuid())
   email              String              @unique
@@ -83,6 +88,7 @@ model Series {
   coverUrl      String?
   producer      String?
   status        SeriesStatus     @default(ONGOING)
+  seriesType    SeriesType       @default(MULTI_EPISODE)
   listenCount   Int              @default(0)
   episodeCount  Int              @default(0)
   averageRating Float            @default(0)

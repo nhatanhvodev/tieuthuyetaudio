@@ -1,7 +1,9 @@
 import type { Metadata, Viewport } from "next";
+import { ClerkProvider } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
 import "./globals.css";
 import { ThemeProvider } from "@/lib/theme/themeContext";
-import { type Theme, isTheme } from "@/lib/theme/themes";
+import { LIGHT_THEMES, type Theme, normalizeTheme } from "@/lib/theme/themes";
 import { safeAuth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { WebVitalsReporter } from "@/components/analytics/web-vitals-reporter";
@@ -25,6 +27,7 @@ export const viewport: Viewport = {
 };
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const { userId: clerkUserId } = await auth();
   const session = await safeAuth();
   const isSignedIn = Boolean(session?.user?.id);
 
@@ -34,12 +37,11 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
       where: { id: session.user.id },
       select: { themePreference: true }
     });
-    if (user?.themePreference && isTheme(user.themePreference)) {
-      initialTheme = user.themePreference;
-    }
+    initialTheme = normalizeTheme(user?.themePreference) ?? initialTheme;
   }
 
   const serverTheme = initialTheme ?? null;
+  const lightThemes = Object.fromEntries(Array.from(LIGHT_THEMES).map((theme) => [theme, true] as const));
 
   return (
     <html lang="vi" suppressHydrationWarning>
@@ -56,13 +58,18 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   try {
     const serverTheme = ${JSON.stringify(serverTheme)};
     const savedTheme = window.localStorage.getItem("theme");
-    const candidate = savedTheme ?? serverTheme ?? "thu-am-sac";
-    const theme = typeof candidate === "string" ? candidate : "thu-am-sac";
-    const lightThemes = { "thu-am-sac": true, light: true, cupcake: true, winter: true, lofi: true };
+    const normalizeTheme = (value) => {
+      if (!value || typeof value !== "string") return undefined;
+      if (value === "thu-am-sac") return "default";
+      return value;
+    };
+    const candidate = normalizeTheme(savedTheme) ?? normalizeTheme(serverTheme) ?? "default";
+    const theme = typeof candidate === "string" ? candidate : "default";
+    const lightThemes = ${JSON.stringify(lightThemes)};
     document.documentElement.setAttribute("data-theme", theme);
     document.documentElement.style.colorScheme = lightThemes[theme] ? "light" : "dark";
   } catch {
-    document.documentElement.setAttribute("data-theme", "thu-am-sac");
+    document.documentElement.setAttribute("data-theme", "default");
     document.documentElement.style.colorScheme = "light";
   }
 })();`
@@ -81,11 +88,13 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
           }}
         />
       </head>
-      <body data-feature-flags={JSON.stringify(featureFlags)}>
-        <WebVitalsReporter />
-        <ThemeProvider initialTheme={initialTheme} isSignedIn={isSignedIn}>
-          <AppFrame session={session}>{children}</AppFrame>
-        </ThemeProvider>
+      <body data-feature-flags={JSON.stringify(featureFlags)} data-clerk-user-id={clerkUserId ?? ""}>
+        <ClerkProvider>
+          <WebVitalsReporter />
+          <ThemeProvider initialTheme={initialTheme} isSignedIn={isSignedIn}>
+            <AppFrame>{children}</AppFrame>
+          </ThemeProvider>
+        </ClerkProvider>
       </body>
     </html>
   );

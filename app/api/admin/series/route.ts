@@ -7,11 +7,12 @@ import { seriesInputSchema } from "@/lib/admin/validators";
 export async function POST(request: Request) {
   const session = await requireAdmin();
   const parsed = seriesInputSchema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: "Truyện không hợp lệ" }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Truyen khong hop le" }, { status: 400 });
 
   const data = parsed.data;
+  const resolvedStatus = data.seriesType === "ONE_SHOT" ? "COMPLETED" : data.status;
   const existing = await db.series.findUnique({ where: { slug: data.slug } });
-  if (existing) return NextResponse.json({ error: "Slug đã được sử dụng" }, { status: 409 });
+  if (existing) return NextResponse.json({ error: "Slug da duoc su dung" }, { status: 409 });
 
   const series = await db.series.create({
     data: {
@@ -19,7 +20,8 @@ export async function POST(request: Request) {
       slug: data.slug,
       description: data.description || null,
       producer: data.producer || null,
-      status: data.status,
+      status: resolvedStatus,
+      seriesType: data.seriesType,
       coverUrl: data.coverUrl || null,
       categories: {
         create: data.categoryIds.map((categoryId) => ({ categoryId }))
@@ -43,6 +45,7 @@ export async function POST(request: Request) {
       title: series.title,
       slug: series.slug,
       status: series.status,
+      seriesType: series.seriesType,
       categoryIds: data.categoryIds
     }
   });

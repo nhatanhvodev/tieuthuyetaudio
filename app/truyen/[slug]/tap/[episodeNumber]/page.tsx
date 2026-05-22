@@ -8,7 +8,6 @@ import { ContextualUpsell } from "@/components/vip/contextual-upsell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { safeAuth } from "@/lib/auth";
-import type { Session } from "next-auth";
 import type { BookmarkTimelineItem } from "@/lib/bookmarks/validators";
 import { db } from "@/lib/db";
 import { isFeatureEnabled } from "@/lib/features";
@@ -22,7 +21,7 @@ export default async function EpisodePage({ params }: { params: Promise<{ slug: 
   const { slug, episodeNumber } = await params;
   const activeEpisodeNumber = Number(episodeNumber);
 
-  let session: Session | null = null;
+  let session: Awaited<ReturnType<typeof safeAuth>> = null;
   let episode: Awaited<ReturnType<typeof getSeriesEpisode>> = null;
 
   try {

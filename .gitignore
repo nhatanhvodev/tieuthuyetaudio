@@ -15,3 +15,22 @@ playwright-report
 test-results
 .local-pg
 .next-dev.log
+
+# clerk configuration (can include secrets)
+/.clerk/
+
+# agent local config/state (Codex/Claude, machine-specific)
+/.claude/
+/.codex/
+*.agent.log
+
+# local index/cache
+/.codegraph/
+
+# runtime uploads (generated in dev/prod)
+/public/uploads/
+
+# local screenshots and temporary artifacts
+/temp/
+/test-screenshots/
+/stitch-screens/

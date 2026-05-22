@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { LIGHT_THEMES, THEME_OPTIONS, type Theme, isTheme } from "@/lib/theme/themes";
+import { LIGHT_THEMES, THEME_OPTIONS, type Theme, normalizeTheme } from "@/lib/theme/themes";
 
 type SaveThemeResult = {
   ok: boolean;
@@ -34,7 +34,7 @@ export function ThemeProvider({
   initialTheme?: Theme;
   isSignedIn?: boolean;
 }) {
-  const [theme, setThemeState] = React.useState<Theme>(initialTheme ?? "dark");
+  const [theme, setThemeState] = React.useState<Theme>(initialTheme ?? "default");
   const [isThemeReady, setIsThemeReady] = React.useState(false);
   const [isSaving, setIsSaving] = React.useState(false);
 
@@ -47,8 +47,8 @@ export function ThemeProvider({
 
   React.useEffect(() => {
     if (typeof window === "undefined") return;
-    const savedTheme = window.localStorage.getItem("theme");
-    const initial = savedTheme && isTheme(savedTheme) ? savedTheme : initialTheme ?? "dark";
+    const savedTheme = normalizeTheme(window.localStorage.getItem("theme"));
+    const initial = savedTheme ?? initialTheme ?? "default";
     setThemeState(initial);
     applyTheme(initial);
     window.localStorage.setItem("theme", initial);
@@ -65,9 +65,9 @@ export function ThemeProvider({
   React.useEffect(() => {
     const onStorage = (event: StorageEvent) => {
       if (event.key !== "theme" || !event.newValue) return;
-      if (isTheme(event.newValue)) {
-        setThemeState(event.newValue);
-      }
+      const normalized = normalizeTheme(event.newValue);
+      if (!normalized) return;
+      setThemeState(normalized);
     };
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);

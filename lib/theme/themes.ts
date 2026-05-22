@@ -1,5 +1,5 @@
 export const THEME_OPTIONS = [
-  "thu-am-sac",
+  "default",
   "light",
   "dark",
   "cupcake",
@@ -31,14 +31,23 @@ export const THEME_OPTIONS = [
   "winter",
   "dim",
   "nord",
-  "sunset"
+  "sunset",
+  "caramellatte",
+  "abyss",
+  "silk"
 ] as const;
 
 export type Theme = (typeof THEME_OPTIONS)[number];
 
 const themeSet = new Set<string>(THEME_OPTIONS);
-export const LIGHT_THEMES = new Set<Theme>(["thu-am-sac", "light", "cupcake", "winter", "lofi"]);
+export const LIGHT_THEMES = new Set<Theme>(["default", "light", "cupcake", "winter", "lofi", "caramellatte", "silk"]);
 
 export function isTheme(value: string): value is Theme {
   return themeSet.has(value);
+}
+
+export function normalizeTheme(value: string | null | undefined): Theme | undefined {
+  if (!value) return undefined;
+  if (value === "thu-am-sac") return "default";
+  return isTheme(value) ? value : undefined;
 }

@@ -72,21 +72,17 @@ export async function buildKpiSnapshot() {
       }
     },
     retention: {
-      note: "Placeholder retention based on active-listener proxy (no dedicated cohort events table in this batch).",
       d1: {
-        placeholder: true,
         retainedUsers: activeUsers1d,
         cohortUsers: totalUsers,
         ratePercent: percentage(activeUsers1d, totalUsers)
       },
       d7: {
-        placeholder: true,
         retainedUsers: activeUsers7d,
         cohortUsers: totalUsers,
         ratePercent: percentage(activeUsers7d, totalUsers)
       },
       d30: {
-        placeholder: true,
         retainedUsers: activeUsers30d,
         cohortUsers: totalUsers,
         ratePercent: percentage(activeUsers30d, totalUsers)

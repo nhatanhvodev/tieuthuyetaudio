@@ -4,8 +4,7 @@ import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 
 const updateSchema = z.object({
-  name: z.string().trim().min(2).optional(),
-  email: z.string().email().optional()
+  name: z.string().trim().min(2).optional()
 });
 
 export async function PATCH(request: Request) {
@@ -14,27 +13,17 @@ export async function PATCH(request: Request) {
   const body = await request.json().catch(() => null);
   const parsed = updateSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ error: "Dữ liệu không hợp lệ" }, { status: 400 });
+    return NextResponse.json({ error: "Du lieu khong hop le" }, { status: 400 });
   }
 
-  const { name, email } = parsed.data;
-  if (!name && !email) {
-    return NextResponse.json({ error: "Không có trường nào để cập nhật" }, { status: 400 });
-  }
-
-  if (email && email !== session.user.email) {
-    const existing = await db.user.findUnique({ where: { email } });
-    if (existing) {
-      return NextResponse.json({ error: "Email đã được sử dụng" }, { status: 409 });
-    }
+  const { name } = parsed.data;
+  if (!name) {
+    return NextResponse.json({ error: "Khong co truong nao de cap nhat" }, { status: 400 });
   }
 
   const updated = await db.user.update({
     where: { id: session.user.id },
-    data: {
-      ...(name ? { name } : {}),
-      ...(email ? { email } : {})
-    },
+    data: { name },
     select: { id: true, email: true, name: true, image: true, role: true, isVip: true }
   });
 

@@ -1,12 +1,14 @@
-import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
+import { mkdir, writeFile } from "node:fs/promises";
 import { NextResponse } from "next/server";
-import { requireAdmin } from "@/lib/auth";
+import { requireAdminApi } from "@/lib/auth";
+import { uploadBufferToSupabaseStorage } from "@/lib/supabase/storage-admin";
 
 export const runtime = "nodejs";
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024;
+const AUDIO_BUCKET = process.env.SUPABASE_STORAGE_AUDIO_BUCKET ?? "audio";
 const ALLOWED_TYPES = new Set([
   "audio/mpeg",
   "audio/mp4",
@@ -35,7 +37,10 @@ function normalizeExt(fileName: string, mimeType: string) {
 }
 
 export async function POST(request: Request) {
-  await requireAdmin();
+  const admin = await requireAdminApi();
+  if (!admin.ok) {
+    return NextResponse.json({ error: admin.error }, { status: admin.status });
+  }
 
   const formData = await request.formData();
   const file = formData.get("file");
@@ -55,22 +60,40 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Định dạng audio không được hỗ trợ." }, { status: 400 });
   }
 
+  const arrayBuffer = await file.arrayBuffer();
   const ext = normalizeExt(file.name, file.type);
   const safeName = `${Date.now()}-${randomUUID()}${ext}`;
-  const relativeDir = path.join("uploads", "audio");
-  const relativePath = path.join(relativeDir, safeName);
-  const absoluteDir = path.join(process.cwd(), "public", relativeDir);
-  const absolutePath = path.join(process.cwd(), "public", relativePath);
+  const objectPath = path.posix.join("episodes", safeName);
+  let url: string;
+  try {
+    const uploaded = await uploadBufferToSupabaseStorage({
+      bucket: AUDIO_BUCKET,
+      objectPath,
+      body: arrayBuffer,
+      contentType: file.type || "audio/mpeg",
+      cacheControl: "31536000",
+      upsert: false
+    });
+    url = uploaded.publicUrl;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Upload audio lên Supabase thất bại.";
+    if (!message.toLowerCase().includes("maximum allowed size")) {
+      return NextResponse.json({ error: message }, { status: 500 });
+    }
 
-  await mkdir(absoluteDir, { recursive: true });
-  const arrayBuffer = await file.arrayBuffer();
-  await writeFile(absolutePath, Buffer.from(arrayBuffer));
+    // Dev fallback: save to local public storage if Supabase rejects large object size.
+    const localDir = path.join(process.cwd(), "public", "uploads", "audio", "episodes");
+    await mkdir(localDir, { recursive: true });
+    const localAbsolutePath = path.join(localDir, safeName);
+    await writeFile(localAbsolutePath, Buffer.from(arrayBuffer));
+    url = `/uploads/audio/episodes/${safeName}`;
+  }
 
   return NextResponse.json({
     ok: true,
     fileName: safeName,
     size: file.size,
     type: file.type,
-    url: `/${relativePath.replaceAll("\\", "/")}`
+    url
   });
 }

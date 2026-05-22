@@ -2,7 +2,10 @@ import { mkdir, writeFile, readFile, unlink, rmdir, stat, readdir } from "node:f
 import path from "node:path";
 import { randomUUID } from "node:crypto";
 import { CHUNK_SIZE, MAX_FILE_SIZE } from "./constants";
+import { uploadBufferToSupabaseStorage } from "@/lib/supabase/storage-admin";
+
 const UPLOAD_TTL_MS = 60 * 60 * 1000; // 1 hour - cleanup stale uploads
+const AUDIO_BUCKET = process.env.SUPABASE_STORAGE_AUDIO_BUCKET ?? "audio";
 
 const ALLOWED_TYPES = new Set([
   "audio/mpeg",
@@ -95,6 +98,7 @@ export async function initChunkedUpload(
   const uploadId = randomUUID();
   const ext = normalizeExt(fileName, mimeType);
   const safeName = `${Date.now()}-${randomUUID()}${ext}`;
+  const objectPath = path.posix.join("episodes", safeName);
   const totalChunks = Math.ceil(fileSize / CHUNK_SIZE);
 
   const uploadDir = getUploadDir(uploadId);
@@ -102,6 +106,7 @@ export async function initChunkedUpload(
 
   const meta = {
     fileName: safeName,
+    objectPath,
     originalName: sanitizeFileName(fileName),
     mimeType,
     fileSize,
@@ -130,6 +135,7 @@ export async function uploadChunk(
 
   let meta: {
     fileName: string;
+    objectPath?: string;
     originalName: string;
     mimeType: string;
     fileSize: number;
@@ -168,7 +174,16 @@ export async function uploadChunk(
   const completed = meta.receivedChunks.length === meta.totalChunks;
 
   if (completed) {
-    const url = await assembleChunks(uploadId, meta);
+    if (!meta.objectPath) {
+      meta.objectPath = path.posix.join("episodes", meta.fileName);
+      await writeFile(metaPath, JSON.stringify(meta, null, 2));
+    }
+    const url = await assembleChunks(uploadId, {
+      fileName: meta.fileName,
+      objectPath: meta.objectPath!,
+      totalChunks: meta.totalChunks,
+      mimeType: meta.mimeType
+    });
     return {
       received: meta.receivedChunks.length,
       totalChunks: meta.totalChunks,
@@ -186,13 +201,9 @@ export async function uploadChunk(
 
 async function assembleChunks(
   uploadId: string,
-  meta: { fileName: string; totalChunks: number; mimeType: string }
+  meta: { fileName: string; objectPath: string; totalChunks: number; mimeType: string }
 ): Promise<string> {
   const uploadDir = getUploadDir(uploadId);
-  const finalDir = path.join(process.cwd(), "public", "uploads", "audio");
-  await mkdir(finalDir, { recursive: true });
-
-  const finalPath = path.join(finalDir, meta.fileName);
   const chunks: Buffer[] = [];
 
   for (let i = 0; i < meta.totalChunks; i++) {
@@ -202,7 +213,30 @@ async function assembleChunks(
   }
 
   const assembled = Buffer.concat(chunks);
-  await writeFile(finalPath, assembled);
+  let publicUrl: string;
+  try {
+    const uploaded = await uploadBufferToSupabaseStorage({
+      bucket: AUDIO_BUCKET,
+      objectPath: meta.objectPath,
+      body: assembled,
+      contentType: meta.mimeType || "audio/mpeg",
+      cacheControl: "31536000",
+      upsert: false
+    });
+    publicUrl = uploaded.publicUrl;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "";
+    if (!message.toLowerCase().includes("maximum allowed size")) {
+      throw error;
+    }
+
+    // Dev fallback: if Supabase rejects big object size, save to local public storage.
+    const localDir = path.join(process.cwd(), "public", "uploads", "audio", "episodes");
+    await mkdir(localDir, { recursive: true });
+    const localAbsolutePath = path.join(localDir, meta.fileName);
+    await writeFile(localAbsolutePath, assembled);
+    publicUrl = `/uploads/audio/episodes/${meta.fileName}`;
+  }
 
   // Cleanup chunks
   for (let i = 0; i < meta.totalChunks; i++) {
@@ -219,7 +253,7 @@ async function assembleChunks(
     // ignore cleanup errors
   }
 
-  return `/uploads/audio/${meta.fileName}`;
+  return publicUrl;
 }
 
 export async function getUploadStatus(uploadId: string): Promise<UploadStatus | null> {
@@ -299,4 +333,3 @@ export async function cleanupStaleUploads(): Promise<number> {
 
   return cleaned;
 }
-

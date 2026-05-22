@@ -77,6 +77,7 @@ export default async function AdminSeriesPage({ searchParams }: { searchParams: 
           title: item.title,
           slug: item.slug,
           status: item.status,
+          seriesType: item.seriesType,
           episodeCount: item.episodeCount,
           categories: item.categories.map((entry) => entry.category.name)
         }))}

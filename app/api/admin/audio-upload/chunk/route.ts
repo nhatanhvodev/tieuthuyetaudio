@@ -1,11 +1,14 @@
 import { NextResponse } from "next/server";
-import { requireAdmin } from "@/lib/auth";
+import { requireAdminApi } from "@/lib/auth";
 import { uploadChunk } from "@/lib/upload/chunked-upload";
 
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
-  await requireAdmin();
+  const admin = await requireAdminApi();
+  if (!admin.ok) {
+    return NextResponse.json({ error: admin.error }, { status: admin.status });
+  }
 
   const formData = await request.formData();
   const uploadId = formData.get("uploadId");

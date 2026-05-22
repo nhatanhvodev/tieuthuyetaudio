@@ -5,7 +5,7 @@ import { CHUNK_SIZE } from "@/lib/upload/constants";
 
 type UploadState = {
   uploading: boolean;
-  progress: number; // 0-100
+  progress: number;
   error: string;
   url: string;
 };
@@ -15,6 +15,50 @@ type UploadOptions = {
   onComplete?: (url: string) => void;
   onError?: (error: string) => void;
 };
+
+type InitPayload = {
+  uploadId: string;
+  totalChunks: number;
+};
+
+type ChunkPayload = {
+  completed?: boolean;
+  url?: string;
+};
+
+function isJsonResponse(response: Response) {
+  const contentType = response.headers.get("content-type") ?? "";
+  return contentType.includes("application/json");
+}
+
+async function readErrorMessage(response: Response, fallback: string) {
+  if (isJsonResponse(response)) {
+    const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+    if (payload?.error) return payload.error;
+    return fallback;
+  }
+
+  const text = await response.text().catch(() => "");
+  if (response.status === 401 || response.status === 403) {
+    return "Phien dang nhap admin da het han. Vui long dang nhap lai.";
+  }
+  if (text.includes("<!DOCTYPE") || text.includes("<html")) {
+    return "Server tra ve HTML thay vi JSON. Kiem tra auth admin va middleware.";
+  }
+  return fallback;
+}
+
+async function readJsonOrThrow<T>(response: Response, fallbackError: string): Promise<T> {
+  if (!isJsonResponse(response)) {
+    const error = await readErrorMessage(response, fallbackError);
+    throw new Error(error);
+  }
+  const payload = (await response.json().catch(() => null)) as T | null;
+  if (!payload) {
+    throw new Error(fallbackError);
+  }
+  return payload;
+}
 
 export function useChunkedUpload(options: UploadOptions = {}) {
   const [state, setState] = useState<UploadState>({
@@ -32,7 +76,6 @@ export function useChunkedUpload(options: UploadOptions = {}) {
       setState({ uploading: true, progress: 0, error: "", url: "" });
 
       try {
-        // Step 1: Initialize upload
         const initRes = await fetch("/api/admin/audio-upload/init", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -45,16 +88,18 @@ export function useChunkedUpload(options: UploadOptions = {}) {
         });
 
         if (!initRes.ok) {
-          const payload = await initRes.json().catch(() => ({}));
-          throw new Error(payload?.error ?? "Không thể bắt đầu upload.");
+          const error = await readErrorMessage(initRes, "Khong the bat dau upload.");
+          throw new Error(error);
         }
 
-        const { uploadId, totalChunks } = await initRes.json();
+        const { uploadId, totalChunks } = await readJsonOrThrow<InitPayload>(
+          initRes,
+          "Phan hoi init upload khong hop le."
+        );
 
-        // Step 2: Upload chunks sequentially
         for (let i = 0; i < totalChunks; i++) {
           if (abortRef.current.signal.aborted) {
-            throw new Error("Upload đã bị hủy.");
+            throw new Error("Upload da bi huy.");
           }
 
           const start = i * CHUNK_SIZE;
@@ -73,11 +118,14 @@ export function useChunkedUpload(options: UploadOptions = {}) {
           });
 
           if (!chunkRes.ok) {
-            const payload = await chunkRes.json().catch(() => ({}));
-            throw new Error(payload?.error ?? `Lỗi upload chunk ${i + 1}/${totalChunks}.`);
+            const error = await readErrorMessage(chunkRes, `Loi upload chunk ${i + 1}/${totalChunks}.`);
+            throw new Error(error);
           }
 
-          const result = await chunkRes.json();
+          const result = await readJsonOrThrow<ChunkPayload>(
+            chunkRes,
+            `Phan hoi chunk ${i + 1}/${totalChunks} khong hop le.`
+          );
           const progress = Math.round(((i + 1) / totalChunks) * 100);
 
           setState((prev) => ({ ...prev, progress }));
@@ -90,9 +138,9 @@ export function useChunkedUpload(options: UploadOptions = {}) {
           }
         }
 
-        throw new Error("Upload hoàn tất nhưng không nhận được URL.");
+        throw new Error("Upload hoan tat nhung khong nhan duoc URL.");
       } catch (err) {
-        const message = err instanceof Error ? err.message : "Upload thất bại.";
+        const message = err instanceof Error ? err.message : "Upload that bai.";
         setState((prev) => ({ ...prev, uploading: false, error: message }));
         options.onError?.(message);
         return null;

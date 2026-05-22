@@ -23,13 +23,14 @@ export const seriesInputSchema = z.object({
   description: z.string().trim().min(10, "Mo ta can toi thieu 10 ky tu").optional().or(z.literal("")),
   producer: z.string().trim().optional().or(z.literal("")),
   status: z.enum(["ONGOING", "COMPLETED"]),
+  seriesType: z.enum(["MULTI_EPISODE", "ONE_SHOT"]).default("MULTI_EPISODE"),
   coverUrl: pathOrUrlSchema.optional().or(z.literal("")),
   categoryIds: z.array(z.string().min(1)).default([])
 });
 
 export const episodeInputSchema = z.object({
   seriesId: z.string().min(1, "Chon truyen"),
-  episodeNumber: z.coerce.number().int().positive("So tap phai lon hon 0"),
+  episodeNumber: z.coerce.number().int().positive("So tap phai lon hon 0").optional(),
   title: z.string().trim().min(2, "Nhap ten tap"),
   audioUrl: pathOrUrlSchema.optional().or(z.literal("")),
   durationSeconds: z.coerce.number().int().positive().optional(),

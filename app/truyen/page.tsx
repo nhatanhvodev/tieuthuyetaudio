@@ -35,7 +35,6 @@ export default async function SeriesPage({ searchParams }: { searchParams: Promi
     filters.minEpisodes !== undefined ? `Tập từ ${filters.minEpisodes}` : null,
     filters.maxEpisodes !== undefined ? `Tập đến ${filters.maxEpisodes}` : null,
     filters.minRating !== undefined ? `Điểm từ ${filters.minRating}` : null,
-    filters.hasAudio === true ? "Có audio" : null,
     filters.sortByCompletion === "completed-first" ? "Ưu tiên hoàn thành" : null,
     filters.sortByCompletion === "ongoing-first" ? "Ưu tiên đang cập nhật" : null
   ].filter((item): item is string => Boolean(item));
@@ -57,8 +56,12 @@ export default async function SeriesPage({ searchParams }: { searchParams: Promi
             minEpisodes={filters.minEpisodes?.toString()}
             maxEpisodes={filters.maxEpisodes?.toString()}
             minRating={filters.minRating?.toString()}
-            hasAudio={filters.hasAudio === undefined ? "" : filters.hasAudio ? "true" : "false"}
             sortByCompletion={filters.sortByCompletion}
+            categories={categories.map((item) => ({
+              slug: item.slug,
+              name: item.name,
+              count: item._count.series
+            }))}
           />
         </div>
       </div>
